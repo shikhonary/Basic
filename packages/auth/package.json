@@ -1,0 +1,24 @@
+{
+  "name": "@workspace/auth",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./server": "./src/server/auth.ts",
+    "./client": "./src/client/react.ts"
+  },
+  "dependencies": {
+    "@better-auth/prisma-adapter": "latest",
+    "@workspace/db": "workspace:*",
+    "@workspace/email": "workspace:*",
+    "better-auth": "latest"
+  },
+  "devDependencies": {
+    "@workspace/typescript-config": "workspace:*",
+    "typescript": "^5"
+  }
+}

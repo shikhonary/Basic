@@ -1,0 +1,36 @@
+{
+  "name": "@workspace/db",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "generate": "prisma generate --config prisma/main/prisma.config.ts && prisma generate --config prisma/tenant/prisma.config.ts",
+    "migrate:main": "prisma migrate dev --config prisma/main/prisma.config.ts",
+    "migrate:tenant": "prisma migrate dev --config prisma/tenant/prisma.config.ts",
+    "migrate:deploy": "prisma migrate deploy --config prisma/main/prisma.config.ts && prisma migrate deploy --config prisma/tenant/prisma.config.ts",
+    "studio:main": "prisma studio --config prisma/main/prisma.config.ts",
+    "studio:tenant": "prisma studio --config prisma/tenant/prisma.config.ts",
+    "seed:main": "node --loader ts-node/esm prisma/seed/main.seed.ts",
+    "seed:tenant": "node --loader ts-node/esm prisma/seed/tenant.seed.ts",
+    "assign-super-admin": "npx tsx prisma/seed/assign-super-admin.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.0.0",
+    "@prisma/client": "^7.0.0",
+    "pg": "^8.16.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/pg": "^8.15.2",
+    "@workspace/typescript-config": "workspace:*",
+    "dotenv": "^16.5.0",
+    "prisma": "^7.0.0",
+    "typescript": "^5"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./main": "./src/main.ts",
+    "./tenant": "./src/tenant.ts"
+  }
+}

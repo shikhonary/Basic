@@ -1,0 +1,39 @@
+import { PrismaPg } from "@prisma/adapter-pg"
+import { PrismaClient } from "../generated/tenant/client"
+import { withTenant } from "./extensions/withTenant"
+
+export type { PrismaClient as TenantPrismaClient }
+
+
+const globalForPrisma = globalThis as unknown as {
+  tenantDb: PrismaClient | undefined
+}
+
+function createTenantDb() {
+  if (!process.env.TENANT_DATABASE_URL) {
+    throw new Error("TENANT_DATABASE_URL is not set in the environment")
+  }
+  const adapter = new PrismaPg({
+    connectionString: process.env.TENANT_DATABASE_URL,
+  })
+  return new PrismaClient({ adapter })
+}
+
+export const tenantDb = globalForPrisma.tenantDb ?? createTenantDb()
+
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.tenantDb = tenantDb
+}
+
+/**
+ * Returns a tenant-scoped database client.
+ * This client will automatically inject and enforce the `tenantId`
+ * on all queries to ensure tenant isolation.
+ */
+export function getTenantDb(tenantId: string) {
+  if (!tenantId) {
+    throw new Error("getTenantDb requires a valid tenantId")
+  }
+  return tenantDb.$extends(withTenant(tenantId))
+}
+

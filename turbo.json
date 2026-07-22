@@ -3,9 +3,16 @@
   "ui": "tui",
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "^generate"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**"]
+      "outputs": [".next/**", "!.next/cache/**"],
+      "env": ["MAIN_DATABASE_URL", "TENANT_DATABASE_URL"]
+    },
+    "generate": {
+      "dependsOn": ["^generate"],
+      "inputs": ["prisma/**", ".env*"],
+      "outputs": ["generated/**"],
+      "env": ["MAIN_DATABASE_URL", "TENANT_DATABASE_URL"]
     },
     "lint": {
       "dependsOn": ["^lint"]
@@ -18,7 +25,8 @@
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "env": ["MAIN_DATABASE_URL", "TENANT_DATABASE_URL"]
     }
   }
 }
