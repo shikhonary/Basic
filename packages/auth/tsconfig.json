@@ -4,7 +4,9 @@
     "outDir": "dist",
     "module": "Preserve",
     "moduleResolution": "Bundler",
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "declaration": false,
+    "declarationMap": false
   },
   "include": ["src"]
 }

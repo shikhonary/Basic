@@ -1,7 +1,17 @@
 import { betterAuth } from "better-auth"
 import { prismaAdapter } from "better-auth/adapters/prisma"
+import { phoneNumber } from "better-auth/plugins"
 import { db } from "@workspace/db/main"
 import { sendVerificationEmail, sendResetPasswordEmail } from "@workspace/email"
+
+/**
+ * Internal email domain used for phone-based registrations.
+ * When a student registers with an 11-digit phone number, we generate
+ * an internal email like `01712345678@phone.bec.local` so we can reuse
+ * Better Auth's email/password signup flow. This email is never shown
+ * to the user and is purely an implementation detail.
+ */
+export const PHONE_EMAIL_DOMAIN = "phone.bec.local"
 
 /**
  * Server-side Better Auth instance.
@@ -20,22 +30,53 @@ export const auth = betterAuth({
     expiresIn: 60 * 60 * 24 * 30, // 30 days
     updateAge: 60 * 60 * 24, // 1 day
   },
+  plugins: [
+    phoneNumber({
+      sendOTP: ({ phoneNumber: phone, code }) => {
+        // TODO: Replace with real SMS provider (Twilio, AWS SNS, etc.)
+        console.log(
+          `[DEV OTP] Phone: ${phone} | Code: ${code}`
+        )
+      },
+    }),
+  ],
   databaseHooks: {
     user: {
       create: {
         after: async (user) => {
           try {
-            await db.user.update({
-              where: { id: user.id },
-              data: {
-                roles: {
-                  connect: { name: "USER" },
+            // Check if this is a phone-based registration
+            const isPhoneRegistration = user.email?.endsWith(
+              `@${PHONE_EMAIL_DOMAIN}`
+            )
+
+            if (isPhoneRegistration) {
+              // Extract phone number from the generated email
+              const phone = user.email.replace(`@${PHONE_EMAIL_DOMAIN}`, "")
+              await db.user.update({
+                where: { id: user.id },
+                data: {
+                  phoneNumber: phone,
+                  phoneNumberVerified: false,
+                  emailVerified: true, // Skip email verification for phone users
+                  roles: {
+                    connect: { name: "USER" },
+                  },
                 },
-              },
-            })
+              })
+            } else {
+              await db.user.update({
+                where: { id: user.id },
+                data: {
+                  roles: {
+                    connect: { name: "USER" },
+                  },
+                },
+              })
+            }
           } catch (error) {
             console.error(
-              "ERROR [Better Auth/User]: Failed to assign USER role on registration:",
+              "ERROR [Better Auth/User]: Failed to process user registration:",
               error
             )
           }
@@ -90,6 +131,11 @@ export const auth = betterAuth({
   emailVerification: {
     sendOnSignUp: true,
     sendVerificationEmail: async ({ user, url }) => {
+      // Skip sending verification email for phone-based registrations
+      if (user.email?.endsWith(`@${PHONE_EMAIL_DOMAIN}`)) {
+        return
+      }
+
       // Modify callback URL to redirect to /auth/sign-in?verified=true upon successful validation
       const redirectUrl = new URL(url)
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
@@ -118,12 +164,15 @@ export const auth = betterAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
     },
   },
-  // Allow multiple domains to share the same auth package
-  trustedOrigins: process.env.TRUSTED_ORIGINS
-    ? process.env.TRUSTED_ORIGINS.split(",")
-    : process.env.NEXT_PUBLIC_APP_URL
-      ? [process.env.NEXT_PUBLIC_APP_URL]
-      : [],
+  // Allow multiple domains to share the same auth package (including localhost:3000 & localhost:3001)
+  trustedOrigins: Array.from(
+    new Set([
+      "http://localhost:3000",
+      "http://localhost:3001",
+      ...(process.env.TRUSTED_ORIGINS ? process.env.TRUSTED_ORIGINS.split(",") : []),
+      ...(process.env.NEXT_PUBLIC_APP_URL ? [process.env.NEXT_PUBLIC_APP_URL] : []),
+    ].filter(Boolean))
+  ),
 })
 
 export type Auth = typeof auth

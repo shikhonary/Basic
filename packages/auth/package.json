@@ -15,7 +15,8 @@
     "@better-auth/prisma-adapter": "latest",
     "@workspace/db": "workspace:*",
     "@workspace/email": "workspace:*",
-    "better-auth": "latest"
+    "better-auth": "latest",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@workspace/typescript-config": "workspace:*",
