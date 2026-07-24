@@ -19,6 +19,7 @@ import { chapterRouter } from "./routers/chapter/chapter.router"
 import { mcqRouter } from "./routers/mcq/mcq.router"
 import { examRouter } from "./routers/exam/exam.router"
 import { examAttemptRouter } from "./routers/exam-attempt/exam-attempt.router"
+import { examGroupRouter } from "./routers/exam-group/exam-group.router"
 
 export const appRouter = createTRPCRouter({
   health: healthRouter,
@@ -32,6 +33,7 @@ export const appRouter = createTRPCRouter({
   mcq: mcqRouter,
   exam: examRouter,
   examAttempt: examAttemptRouter,
+  examGroup: examGroupRouter,
 })
 
 /** Type used by the client to infer procedure types end-to-end. */

@@ -94,9 +94,10 @@ model AcademicClass {
   nameEn   String
   level    String
   position Int                    @default(0)
-  students Student[]
-  subjects AcademicClassSubject[]
-  exams    Exam[]
+  students   Student[]
+  subjects   AcademicClassSubject[]
+  exams      Exam[]
+  examGroups ExamGroup[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -193,9 +194,10 @@ model Student {
   userId String? @unique
   user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  examAttempts ExamAttempt[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  examAttempts     ExamAttempt[]
+  examGroupResults ExamGroupResult[]
 
   @@index([userId])
   @@index([studentId])
@@ -256,8 +258,9 @@ model Exam {
   academicClassId String
   academicClass   AcademicClass @relation(fields: [academicClassId], references: [id], onDelete: Restrict)
 
-  examSubjects ExamSubject[]
-  examAttempts ExamAttempt[]
+  examSubjects   ExamSubject[]
+  examAttempts   ExamAttempt[]
+  examGroupItems ExamGroupItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -398,3 +401,89 @@ model ExamSubject {
   @@index([subjectId])
   @@map("exam_subject")
 }
+
+model ExamGroup {
+  id              String   @id @default(uuid())
+  title           String
+  code            String?
+  description     String?
+  type            String   @default("MODEL_TEST")
+  calculationType String   @default("SUM")
+  bestOfNCount    Int?
+  totalMarks      Float?
+  passMarks       Float?
+  startDate       DateTime?
+  endDate         DateTime?
+  isPublished     Boolean  @default(false)
+
+  academicClassId String?
+  academicClass   AcademicClass? @relation(fields: [academicClassId], references: [id], onDelete: SetNull)
+
+  items        ExamGroupItem[]
+  groupResults ExamGroupResult[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([title])
+  @@index([type])
+  @@index([academicClassId])
+  @@index([isPublished])
+  @@map("exam_group")
+}
+
+model ExamGroupItem {
+  id String @id @default(uuid())
+
+  examGroupId String
+  examGroup   ExamGroup @relation(fields: [examGroupId], references: [id], onDelete: Cascade)
+
+  examId String
+  exam   Exam   @relation(fields: [examId], references: [id], onDelete: Cascade)
+
+  position   Int     @default(0)
+  weightage  Float   @default(100.0)
+  isRequired Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([examGroupId, examId])
+  @@index([examGroupId])
+  @@index([examId])
+  @@index([examGroupId, position])
+  @@map("exam_group_item")
+}
+
+model ExamGroupResult {
+  id String @id @default(uuid())
+
+  examGroupId String
+  examGroup   ExamGroup @relation(fields: [examGroupId], references: [id], onDelete: Cascade)
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  totalObtainedMarks Float   @default(0)
+  totalMaxMarks      Float   @default(0)
+  percentage         Float   @default(0)
+  gpa                Float?
+  grade              String?
+  meritPosition      Int?
+
+  status            String @default("PASSED")
+  examsAttempted    Int    @default(0)
+  totalExamsInGroup Int    @default(0)
+
+  calculatedAt DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([examGroupId, studentId])
+  @@index([examGroupId])
+  @@index([studentId])
+  @@index([examGroupId, meritPosition])
+  @@index([examGroupId, percentage])
+  @@map("exam_group_result")
+}
+

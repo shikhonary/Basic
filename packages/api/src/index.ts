@@ -77,3 +77,24 @@ export type {
   RemoveExamSubjectInput,
   ExamSortOption,
 } from "./routers/exam/exam.schema"
+export type {
+  ListExamGroupsInput,
+  GetExamGroupInput,
+  ExamGroupStatsInput,
+  CreateExamGroupInput,
+  UpdateExamGroupInput,
+  DeleteExamGroupInput,
+  BulkDeleteExamGroupsInput,
+  TogglePublishExamGroupInput,
+  AddExamGroupItemInput,
+  UpdateExamGroupItemInput,
+  RemoveExamGroupItemInput,
+  ReorderExamGroupItemsInput,
+  CalculateExamGroupResultsInput,
+  ListExamGroupResultsInput,
+  GetStudentExamGroupResultInput,
+  ExamGroupSortOption,
+  CalculationType,
+  ExamGroupType,
+} from "./routers/exam-group/exam-group.schema"
+
