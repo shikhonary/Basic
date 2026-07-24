@@ -4,8 +4,9 @@ import { VerificationEmail } from "./emails/VerificationEmail";
 import { ResetPasswordEmail } from "./emails/ResetPasswordEmail";
 import React from "react";
 
-// Use custom verified domain if provided, otherwise fallback to Resend testing domain
-const DEFAULT_FROM = process.env.EMAIL_FROM || process.env.RESEND_FROM || "onboarding@resend.dev";
+function getSenderAddress(): string {
+  return process.env.EMAIL_FROM || process.env.RESEND_FROM || "onboarding@resend.dev";
+}
 
 export const sendWelcomeEmail = async ({
   to,
@@ -15,8 +16,9 @@ export const sendWelcomeEmail = async ({
   name: string;
 }) => {
   try {
+    const from = getSenderAddress();
     const response = await resend.emails.send({
-      from: DEFAULT_FROM,
+      from,
       to,
       subject: "Welcome to our platform!",
       react: React.createElement(WelcomeEmail, { name }),
@@ -42,9 +44,10 @@ export const sendVerificationEmail = async ({
   url: string;
 }) => {
   try {
-    console.log(`[Email] Sending verification email to ${to} from ${DEFAULT_FROM}...`);
+    const from = getSenderAddress();
+    console.log(`[Email] Sending verification email to ${to} from ${from}...`);
     const response = await resend.emails.send({
-      from: DEFAULT_FROM,
+      from,
       to,
       subject: "Verify your email address",
       react: React.createElement(VerificationEmail, { name, url }),
@@ -71,8 +74,9 @@ export const sendResetPasswordEmail = async ({
   url: string;
 }) => {
   try {
+    const from = getSenderAddress();
     const response = await resend.emails.send({
-      from: DEFAULT_FROM,
+      from,
       to,
       subject: "Reset your password",
       react: React.createElement(ResetPasswordEmail, { name, url }),
