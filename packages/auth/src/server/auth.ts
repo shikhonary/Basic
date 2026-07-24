@@ -162,7 +162,7 @@ export const auth = betterAuth({
 
       // Modify callback URL to redirect to /auth/sign-in?verified=true upon successful validation
       const redirectUrl = new URL(url)
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+      const appUrl = redirectUrl.origin || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
       redirectUrl.searchParams.set(
         "callbackURL",
         `${appUrl}/auth/sign-in?verified=true`

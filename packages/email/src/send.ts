@@ -4,8 +4,8 @@ import { VerificationEmail } from "./emails/VerificationEmail";
 import { ResetPasswordEmail } from "./emails/ResetPasswordEmail";
 import React from "react";
 
-// For testing purposes, we use the default resend testing domain
-const DEFAULT_FROM = "onboarding@resend.dev";
+// Use custom verified domain if provided, otherwise fallback to Resend testing domain
+const DEFAULT_FROM = process.env.EMAIL_FROM || process.env.RESEND_FROM || "onboarding@resend.dev";
 
 export const sendWelcomeEmail = async ({
   to,
@@ -22,6 +22,7 @@ export const sendWelcomeEmail = async ({
       react: React.createElement(WelcomeEmail, { name }),
     });
     if (response.error) {
+      console.error("[Resend Error] Failed to send welcome email:", response.error);
       return { success: false, error: response.error };
     }
     return { success: true, data: response.data };
@@ -41,6 +42,7 @@ export const sendVerificationEmail = async ({
   url: string;
 }) => {
   try {
+    console.log(`[Email] Sending verification email to ${to} from ${DEFAULT_FROM}...`);
     const response = await resend.emails.send({
       from: DEFAULT_FROM,
       to,
@@ -48,8 +50,10 @@ export const sendVerificationEmail = async ({
       react: React.createElement(VerificationEmail, { name, url }),
     });
     if (response.error) {
+      console.error("[Resend Error] Failed to send verification email:", response.error);
       return { success: false, error: response.error };
     }
+    console.log(`[Email] Verification email sent successfully to ${to}`);
     return { success: true, data: response.data };
   } catch (error: any) {
     console.error("Error sending verification email:", error);
