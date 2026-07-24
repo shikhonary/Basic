@@ -155,8 +155,11 @@ export const auth = betterAuth({
   emailVerification: {
     sendOnSignUp: true,
     sendVerificationEmail: async ({ user, url }) => {
+      console.log(`[Better Auth/Email] sendVerificationEmail triggered for user: ${user.email}`)
+
       // Skip sending verification email for phone-based registrations
       if (user.email?.endsWith(`@${PHONE_EMAIL_DOMAIN}`)) {
+        console.log(`[Better Auth/Email] Skipping verification email for internal phone email: ${user.email}`)
         return
       }
 
@@ -167,6 +170,8 @@ export const auth = betterAuth({
         "callbackURL",
         `${appUrl}/auth/sign-in?verified=true`
       )
+
+      console.log(`[Better Auth/Email] Dispatching verification email to ${user.email} with URL: ${redirectUrl.toString()}`)
 
       const result = await sendVerificationEmail({
         to: user.email,
@@ -179,6 +184,8 @@ export const auth = betterAuth({
           "ERROR [Better Auth/Email]: Failed to send verification email:",
           result.error
         )
+      } else {
+        console.log(`[Better Auth/Email] Verification email successfully sent to ${user.email}`)
       }
     },
   },
