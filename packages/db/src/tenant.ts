@@ -10,11 +10,12 @@ const globalForPrisma = globalThis as unknown as {
 }
 
 function createTenantDb() {
-  if (!process.env.TENANT_DATABASE_URL) {
-    throw new Error("TENANT_DATABASE_URL is not set in the environment")
+  const connectionString = process.env.TENANT_DATABASE_URL || process.env.DATABASE_URL
+  if (!connectionString) {
+    console.warn("TENANT_DATABASE_URL is not set in the environment. Using fallback for build phase.")
   }
   const adapter = new PrismaPg({
-    connectionString: process.env.TENANT_DATABASE_URL,
+    connectionString: connectionString || "postgresql://postgres:postgres@localhost:5432/dummy_tenant",
   })
   return new PrismaClient({ adapter })
 }

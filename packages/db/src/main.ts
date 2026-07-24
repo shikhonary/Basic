@@ -8,11 +8,12 @@ const globalForPrisma = globalThis as unknown as {
 }
 
 function createMainDb() {
-  if (!process.env.MAIN_DATABASE_URL) {
-    throw new Error("MAIN_DATABASE_URL is not set in the environment")
+  const connectionString = process.env.MAIN_DATABASE_URL || process.env.DATABASE_URL
+  if (!connectionString) {
+    console.warn("MAIN_DATABASE_URL is not set in the environment. Using fallback for build phase.")
   }
   const adapter = new PrismaPg({
-    connectionString: process.env.MAIN_DATABASE_URL,
+    connectionString: connectionString || "postgresql://postgres:postgres@localhost:5432/dummy_main",
   })
   return new PrismaClient({ adapter })
 }
