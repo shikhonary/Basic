@@ -28,12 +28,12 @@ export default function VerificationStatusCard({
           <span className="material-symbols-outlined text-[32px] text-primary">mail</span>
         </div>
         <h1 className="font-headline-md text-headline-md text-on-surface text-center mb-2">
-          Check your email
+          আপনার ইমেইল চেক করুন
         </h1>
         <p className="font-body-md text-on-surface-variant text-center">
-          We sent a verification link to <br />
+          আমরা একটি ভেরিফিকেশন লিঙ্ক পাঠিয়েছি এখানে: <br />
           <span className="font-bold text-primary">{registeredEmail}</span>. <br />
-          Please click the link in the email to verify your account.
+          আপনার অ্যাকাউন্ট ভেরিফাই করতে ইমেইলের লিঙ্কে ক্লিক করুন।
         </p>
       </div>
 
@@ -41,7 +41,7 @@ export default function VerificationStatusCard({
       {resendSuccess && (
         <div className="mb-6 flex items-start gap-3 rounded-lg border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-700">
           <span className="material-symbols-outlined text-[18px] mt-px shrink-0">check_circle</span>
-          <span>A new verification link has been sent successfully.</span>
+          <span>নতুন ভেরিফিকেশন লিঙ্ক সফলভাবে পাঠানো হয়েছে।</span>
         </div>
       )}
 
@@ -63,16 +63,16 @@ export default function VerificationStatusCard({
           {resending ? (
             <>
               <span className="material-symbols-outlined animate-spin text-[20px]">sync</span>
-              <span>Resending...</span>
+              <span>পুনরায় পাঠানো হচ্ছে...</span>
             </>
           ) : countdown > 0 ? (
             <>
-              <span>Resend in {formatTime(countdown)}</span>
+              <span>{formatTime(countdown)} পর পুনরায় পাঠান</span>
               <span className="material-symbols-outlined text-[20px]">hourglass_empty</span>
             </>
           ) : (
             <>
-              <span>Resend Email</span>
+              <span>ইমেইল পুনরায় পাঠান</span>
               <span className="material-symbols-outlined text-[20px]">send</span>
             </>
           )}
@@ -82,7 +82,7 @@ export default function VerificationStatusCard({
           className="w-full h-14 border border-outline-variant bg-transparent rounded-lg hover:bg-surface-container-low transition-colors duration-200 flex items-center justify-center font-headline-md text-[18px] text-on-surface text-center"
           href="/auth/sign-in"
         >
-          Back to Log In
+          লগইন পেজে ফিরে যান
         </Link>
       </div>
     </div>

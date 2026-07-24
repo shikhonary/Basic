@@ -15,6 +15,7 @@
     "@better-auth/prisma-adapter": "latest",
     "@workspace/db": "workspace:*",
     "@workspace/email": "workspace:*",
+    "@workspace/sms": "workspace:*",
     "better-auth": "latest",
     "zod": "^3.24.2"
   },

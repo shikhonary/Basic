@@ -25,16 +25,16 @@ function isPhoneNumber(value: string): boolean {
 export const loginSchema = z.object({
   identifier: z
     .string()
-    .min(1, 'Email or phone number is required')
+    .min(1, 'ইমেইল অথবা ফোন নম্বর প্রদান করা আবশ্যক')
     .refine(
       (val) => {
         const digitsOnly = val.replace(/\D/g, '');
         // Valid if it's an 11-digit phone OR a valid email
         return digitsOnly.length === 11 || z.string().email().safeParse(val).success;
       },
-      { message: 'Please enter a valid email address or 11-digit phone number' }
+      { message: 'সঠিক ইমেইল ঠিকানা অথবা ১১ ডিজিটের ফোন নম্বর দিন' }
     ),
-  password: z.string().min(1, 'Password is required'),
+  password: z.string().min(1, 'পাসওয়ার্ড দেওয়া আবশ্যক'),
   rememberMe: z.boolean().optional(),
 });
 
@@ -122,10 +122,10 @@ function LoginContent() {
 
       if (authError) {
         if (authError.status === 403 || authError.message?.toLowerCase().includes("verify")) {
-          setError("Your email address is not verified. Please verify your email first.");
+          setError("আপনার ইমেইল ঠিকানাটি এখনও ভেরিফাই করা হয়নি। অনুগ্রহ করে আগে ইমেইল ভেরিফাই করুন।");
           setShowResend(true);
         } else {
-          setError(authError.message ?? "Failed to log in. Please check your credentials.");
+          setError(authError.message ?? "লগইন করা সম্ভব হয়নি। আপনার দেওয়া তথ্য যাচাই করুন।");
         }
         return;
       }
@@ -134,7 +134,7 @@ function LoginContent() {
         router.push('/');
       }
     } catch (err: any) {
-      setError(err?.message ?? "An unexpected error occurred.");
+      setError(err?.message ?? "একটি অপ্রত্যাশিত সমস্যা ঘটেছে।");
     } finally {
       setLoading(false);
     }
@@ -158,13 +158,13 @@ function LoginContent() {
       });
 
       if (resendError) {
-        setError(resendError.message ?? 'Failed to resend verification email.');
+        setError(resendError.message ?? 'ভেরিফিকেশন ইমেইল পুনরায় পাঠানো সম্ভব হয়নি।');
       } else {
         setResendSuccess(true);
         setShowResend(false);
       }
     } catch (err: any) {
-      setError(err?.message ?? "An unexpected error occurred.");
+      setError(err?.message ?? "একটি অপ্রত্যাশিত সমস্যা ঘটেছে।");
     } finally {
       setResending(false);
     }
@@ -179,14 +179,14 @@ function LoginContent() {
         callbackURL: '/',
       });
     } catch (err: any) {
-      setError(err?.message ?? "An error occurred during Google sign-in.");
+      setError(err?.message ?? "গুগল সাইন-ইনের সময়ে সমস্যা ঘটেছে।");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="bg-surface text-on-surface min-h-screen flex flex-col font-body-md overflow-x-hidden">
+    <div className="bg-surface text-on-surface min-h-screen flex flex-col font-body-md font-solaiman overflow-x-hidden">
       <style dangerouslySetInnerHTML={{
         __html: `
         .fade-in {
@@ -232,11 +232,11 @@ function LoginContent() {
           <div className="mt-8 flex justify-center gap-6">
             <div className="flex items-center gap-2 text-on-surface-variant/60">
               <span className="material-symbols-outlined text-[16px]">verified_user</span>
-              <span className="text-label-sm">End-to-end Encrypted</span>
+              <span className="text-label-sm">এন্ড-টু-এন্ড এনক্রিপ্টেড</span>
             </div>
             <div className="flex items-center gap-2 text-on-surface-variant/60">
               <span className="material-symbols-outlined text-[16px]">public</span>
-              <span className="text-label-sm">v2.4.1 (Stable)</span>
+              <span className="text-label-sm">v2.4.1 (স্টেবল)</span>
             </div>
           </div>
         </div>
@@ -251,7 +251,7 @@ export default function LoginPage() {
       <div className="min-h-screen flex items-center justify-center bg-surface">
         <div className="flex flex-col items-center gap-4">
           <span className="material-symbols-outlined animate-spin text-[32px] text-primary">sync</span>
-          <span className="text-sm text-on-surface-variant">Loading BEC Workstation...</span>
+          <span className="text-sm text-on-surface-variant">BEC ওয়ার্কস্টেশন লোড হচ্ছে...</span>
         </div>
       </div>
     }>

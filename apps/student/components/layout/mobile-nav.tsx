@@ -2,37 +2,41 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import {
+  LayoutDashboard,
+  BookOpen,
+  ClipboardList,
+  User,
+} from "lucide-react"
 
 const mobileNavItems = [
-  { href: "/", label: "Home", icon: "dashboard" },
-  { href: "/users", label: "Users", icon: "group" },
-  { href: "/schedule", label: "Schedule", icon: "calendar_month" },
-  { href: "/exams", label: "Exams", icon: "quiz" },
-  { href: "/reports", label: "Reports", icon: "analytics" },
+  { href: "/", label: "হোম", icon: LayoutDashboard },
+  { href: "/question-bank", label: "প্রশ্নব্যাংক", icon: BookOpen },
+  { href: "/exams", label: "পরীক্ষা", icon: ClipboardList },
+  { href: "/profile", label: "প্রোফাইল", icon: User },
 ]
 
 export function MobileNav() {
   const pathname = usePathname()
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center justify-around border-t border-outline-variant/30 bg-surface md:hidden">
+    <div className="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center justify-around border-t border-outline-variant/30 bg-surface-container-low md:hidden">
       {mobileNavItems.map((item) => {
         const isActive = pathname === item.href
+        const Icon = item.icon
+
         return (
           <Link
             key={item.href}
             href={item.href}
-            className={`flex flex-col items-center gap-1 ${
-              isActive ? "text-primary font-bold" : "text-on-surface-variant font-medium"
+            className={`flex flex-col items-center gap-1 transition-colors ${
+              isActive
+                ? "text-primary font-bold"
+                : "text-on-surface-variant font-medium hover:text-on-surface"
             }`}
           >
-            <span
-              className="material-symbols-outlined"
-              style={isActive ? { fontVariationSettings: "'FILL' 1" } : undefined}
-            >
-              {item.icon}
-            </span>
-            <span className="text-[10px] uppercase">{item.label}</span>
+            <Icon className="h-5 w-5" />
+            <span className="text-[11px] font-semibold">{item.label}</span>
           </Link>
         )
       })}

@@ -14,7 +14,7 @@ export default function ResetPasswordPage() {
   const token = searchParams.get('token');
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(token ? null : 'Missing password reset token. Please request a new link.');
+  const [error, setError] = useState<string | null>(token ? null : 'পাসওয়ার্ড রিসেট টোকেন পাওয়া যায়নি। নতুন লিঙ্কের জন্য আবেদন করুন।');
 
   const {
     register,
@@ -30,7 +30,7 @@ export default function ResetPasswordPage() {
 
   const onSubmit: SubmitHandler<ResetPasswordInput> = async (values) => {
     if (!token) {
-      setError('Missing reset token. Please request a new password reset link.');
+      setError('পাসওয়ার্ড রিসেট টোকেন নেই। নতুন পাসওয়ার্ড রিসেট লিঙ্ক অনুরোধ করুন।');
       return;
     }
 
@@ -44,19 +44,19 @@ export default function ResetPasswordPage() {
       });
 
       if (resetError) {
-        setError(resetError.message ?? 'Failed to reset password. The link may have expired.');
+        setError(resetError.message ?? 'পাসওয়ার্ড রিসেট করা সম্ভব হয়নি। লিঙ্কটির মেয়াদ শেষ হয়ে গিয়ে থাকতে পারে।');
       } else {
         router.push('/auth/sign-in?resetSuccess=true');
       }
     } catch (err: any) {
-      setError(err?.message ?? 'An unexpected error occurred.');
+      setError(err?.message ?? 'একটি অপ্রত্যাশিত সমস্যা ঘটেছে।');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="bg-surface text-on-surface min-h-screen flex flex-col font-body-md overflow-x-hidden">
+    <div className="bg-surface text-on-surface min-h-screen flex flex-col font-body-md font-solaiman overflow-x-hidden">
       <style dangerouslySetInnerHTML={{
         __html: `
         .fade-in {
@@ -93,11 +93,11 @@ export default function ResetPasswordPage() {
           <div className="mt-8 flex justify-center gap-6">
             <div className="flex items-center gap-2 text-on-surface-variant/60">
               <span className="material-symbols-outlined text-[16px]">verified_user</span>
-              <span className="text-label-sm">End-to-end Encrypted</span>
+              <span className="text-label-sm">এন্ড-টু-এন্ড এনক্রিপ্টেড</span>
             </div>
             <div className="flex items-center gap-2 text-on-surface-variant/60">
               <span className="material-symbols-outlined text-[16px]">public</span>
-              <span className="text-label-sm">v2.4.1 (Stable)</span>
+              <span className="text-label-sm">v2.4.1 (স্টেবল)</span>
             </div>
           </div>
         </div>

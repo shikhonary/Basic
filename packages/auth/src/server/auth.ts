@@ -3,6 +3,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma"
 import { phoneNumber } from "better-auth/plugins"
 import { db } from "@workspace/db/main"
 import { sendVerificationEmail, sendResetPasswordEmail } from "@workspace/email"
+import { sendSms } from "@workspace/sms"
 
 /**
  * Internal email domain used for phone-based registrations.
@@ -32,11 +33,21 @@ export const auth = betterAuth({
   },
   plugins: [
     phoneNumber({
-      sendOTP: ({ phoneNumber: phone, code }) => {
-        // TODO: Replace with real SMS provider (Twilio, AWS SNS, etc.)
-        console.log(
-          `[DEV OTP] Phone: ${phone} | Code: ${code}`
-        )
+      sendOTP: async ({ phoneNumber: phone, code }) => {
+        console.log(`[DEV OTP] Phone: ${phone} | Code: ${code}`)
+        try {
+          await sendSms(phone, `Your BEC verification code is ${code}`)
+        } catch (error) {
+          console.error("ERROR [Better Auth/SMS]: Failed to send SMS OTP:", error)
+        }
+      },
+      sendPasswordResetOTP: async ({ phoneNumber: phone, code }) => {
+        console.log(`[DEV RESET OTP] Phone: ${phone} | Code: ${code}`)
+        try {
+          await sendSms(phone, `Your BEC verification code is ${code}`)
+        } catch (error) {
+          console.error("ERROR [Better Auth/SMS]: Failed to send reset password SMS OTP:", error)
+        }
       },
     }),
   ],
@@ -112,6 +123,19 @@ export const auth = betterAuth({
     sendResetPassword: async ({ user, url, token }) => {
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
       const resetUrl = `${appUrl}/auth/reset-password?token=${token}`
+
+      // Check if this is a phone-based user
+      if (user.email?.endsWith(`@${PHONE_EMAIL_DOMAIN}`)) {
+        const phone = user.email.replace(`@${PHONE_EMAIL_DOMAIN}`, "")
+
+        try {
+          console.log(`[DEV RESET SMS LINK] Phone: ${phone} | Link: ${resetUrl}`)
+          await sendSms(phone, `Your BEC password reset link: ${resetUrl}`)
+        } catch (error) {
+          console.error("ERROR [Better Auth/SMS]: Failed to send reset password SMS link:", error)
+        }
+        return
+      }
 
       const result = await sendResetPasswordEmail({
         to: user.email,

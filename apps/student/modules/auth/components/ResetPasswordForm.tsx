@@ -7,11 +7,11 @@ import { UseFormRegister, FieldErrors } from 'react-hook-form';
 
 export const resetPasswordSchema = z
   .object({
-    password: z.string().min(8, 'Password must be at least 8 characters long'),
+    password: z.string().min(8, 'পাসওয়ার্ড অন্তত ৮ অক্ষরের হতে হবে'),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
+    message: "পাসওয়ার্ড দুটি মিলছে না",
     path: ['confirmPassword'],
   });
 
@@ -24,6 +24,7 @@ interface ResetPasswordFormProps {
   error: string | null;
   loading: boolean;
   onSubmit: (e: React.FormEvent) => void;
+  onBack?: () => void;
 }
 
 export default function ResetPasswordForm({
@@ -32,6 +33,7 @@ export default function ResetPasswordForm({
   error,
   loading,
   onSubmit,
+  onBack,
 }: ResetPasswordFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -49,10 +51,10 @@ export default function ResetPasswordForm({
           className="h-16 w-auto mb-8 object-contain"
         />
         <h1 className="font-headline-md text-headline-md text-on-surface text-center mb-2">
-          New Password
+          নতুন পাসওয়ার্ড
         </h1>
         <p className="font-body-md text-on-surface-variant text-center">
-          Please enter your new secure password
+          আপনার নতুন পাসওয়ার্ড প্রবেশ করান
         </p>
       </div>
 
@@ -75,7 +77,7 @@ export default function ResetPasswordForm({
               className={`w-full h-14 pl-4 pr-12 border bg-white rounded-lg focus:ring-2 focus:ring-primary-container/20 focus:border-primary-container transition-all duration-200 outline-none text-on-surface peer placeholder:text-transparent ${errors.password ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-outline-variant'
                 }`}
               id="password"
-              placeholder="New Password"
+              placeholder="নতুন পাসওয়ার্ড"
               type={showPassword ? 'text' : 'password'}
               autoComplete="new-password"
             />
@@ -83,7 +85,7 @@ export default function ResetPasswordForm({
               className="absolute left-4 top-4 text-on-surface-variant transition-all duration-200 pointer-events-none peer-focus:-top-2 peer-focus:left-2 peer-focus:text-xs peer-focus:text-primary-container peer-focus:bg-white peer-focus:px-1 peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-2 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-primary-container peer-[:not(:placeholder-shown)]:bg-white peer-[:not(:placeholder-shown)]:px-1"
               htmlFor="password"
             >
-              New Password
+              নতুন পাসওয়ার্ড
             </label>
             <button
               type="button"
@@ -110,7 +112,7 @@ export default function ResetPasswordForm({
               className={`w-full h-14 pl-4 pr-12 border bg-white rounded-lg focus:ring-2 focus:ring-primary-container/20 focus:border-primary-container transition-all duration-200 outline-none text-on-surface peer placeholder:text-transparent ${errors.confirmPassword ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-outline-variant'
                 }`}
               id="confirmPassword"
-              placeholder="Confirm New Password"
+              placeholder="নতুন পাসওয়ার্ড নিশ্চিত করুন"
               type={showConfirmPassword ? 'text' : 'password'}
               autoComplete="new-password"
             />
@@ -118,7 +120,7 @@ export default function ResetPasswordForm({
               className="absolute left-4 top-4 text-on-surface-variant transition-all duration-200 pointer-events-none peer-focus:-top-2 peer-focus:left-2 peer-focus:text-xs peer-focus:text-primary-container peer-focus:bg-white peer-focus:px-1 peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-2 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-primary-container peer-[:not(:placeholder-shown)]:bg-white peer-[:not(:placeholder-shown)]:px-1"
               htmlFor="confirmPassword"
             >
-              Confirm New Password
+              নতুন পাসওয়ার্ড নিশ্চিত করুন
             </label>
             <button
               type="button"
@@ -146,16 +148,29 @@ export default function ResetPasswordForm({
           {loading ? (
             <>
               <span className="material-symbols-outlined animate-spin text-[20px]">sync</span>
-              <span>Updating...</span>
+              <span>আপডেট করা হচ্ছে...</span>
             </>
           ) : (
             <>
-              <span>Update Password</span>
+              <span>পাসওয়ার্ড আপডেট করুন</span>
               <span className="material-symbols-outlined text-[20px]">lock_reset</span>
             </>
           )}
         </Button>
       </form>
+
+      {onBack && (
+        <div className="mt-6">
+          <button
+            type="button"
+            onClick={onBack}
+            disabled={loading}
+            className="w-full text-center text-sm font-medium text-on-surface-variant hover:text-primary transition-colors py-2 cursor-pointer disabled:opacity-50"
+          >
+            &larr; ওটিপি পেজে ফিরে যান
+          </button>
+        </div>
+      )}
     </div>
   );
 }

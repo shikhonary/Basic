@@ -12,12 +12,26 @@ import { healthRouter } from "./routers/health"
 import { userRouter } from "./routers/user/user.router"
 import { roleRouter } from "./routers/role/role.router"
 import { tenantRouter } from "./routers/tenant/tenant.router"
+import { academicClassRouter } from "./routers/academic-class/academic-class.router"
+import { studentRouter } from "./routers/student/student.router"
+import { subjectRouter } from "./routers/subject/subject.router"
+import { chapterRouter } from "./routers/chapter/chapter.router"
+import { mcqRouter } from "./routers/mcq/mcq.router"
+import { examRouter } from "./routers/exam/exam.router"
+import { examAttemptRouter } from "./routers/exam-attempt/exam-attempt.router"
 
 export const appRouter = createTRPCRouter({
   health: healthRouter,
   user: userRouter,
   role: roleRouter,
   tenant: tenantRouter,
+  academicClass: academicClassRouter,
+  student: studentRouter,
+  subject: subjectRouter,
+  chapter: chapterRouter,
+  mcq: mcqRouter,
+  exam: examRouter,
+  examAttempt: examAttemptRouter,
 })
 
 /** Type used by the client to infer procedure types end-to-end. */

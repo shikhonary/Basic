@@ -10,6 +10,10 @@ const fontSans = Inter({ subsets: ['latin'], variable: '--font-sans' });
 const fontHeading = Manrope({ subsets: ['latin'], variable: '--font-heading' });
 const fontMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' });
 
+import { Toaster } from "@workspace/ui/components/sonner"
+import { NuqsAdapter } from "nuqs/adapters/next/app"
+import { ModalProvider } from "@/components/providers/modal-provider"
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -25,11 +29,15 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       </head>
       <body>
-        <TRPCReactProvider>
-          <ThemeProvider>
-            <AuthGuard>{children}</AuthGuard>
-          </ThemeProvider>
-        </TRPCReactProvider>
+        <NuqsAdapter>
+          <TRPCReactProvider>
+            <ThemeProvider>
+              <AuthGuard>{children}</AuthGuard>
+              <ModalProvider />
+              <Toaster />
+            </ThemeProvider>
+          </TRPCReactProvider>
+        </NuqsAdapter>
       </body>
     </html>
   )

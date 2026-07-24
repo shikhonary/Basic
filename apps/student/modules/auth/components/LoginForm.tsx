@@ -60,10 +60,10 @@ export default function LoginForm({
           className="h-16 w-auto mb-8 object-contain"
         />
         <h1 className="font-headline-md text-headline-md text-on-surface text-center mb-2">
-          Welcome Back
+          স্বাগতম
         </h1>
         <p className="font-body-md text-on-surface-variant text-center">
-          Secure access to your <span className="font-bold text-primary">BEC</span> workstation
+          <span className="font-bold text-primary">BEC</span> স্টুডেন্ট পোর্টালে প্রবেশ করুন
         </p>
       </div>
 
@@ -71,7 +71,7 @@ export default function LoginForm({
       {showVerifiedNotice && !resendSuccess && (
         <div className="mb-6 flex items-start gap-3 rounded-lg border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-700">
           <span className="material-symbols-outlined text-[18px] mt-px shrink-0">check_circle</span>
-          <span>Email verified successfully! You can now log in.</span>
+          <span>ইমেইল ভেরিফিকেশন সফল হয়েছে! এখন লগইন করতে পারেন।</span>
         </div>
       )}
 
@@ -79,7 +79,7 @@ export default function LoginForm({
       {showResetSuccessNotice && (
         <div className="mb-6 flex items-start gap-3 rounded-lg border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-700">
           <span className="material-symbols-outlined text-[18px] mt-px shrink-0">check_circle</span>
-          <span>Password reset successful! You can now log in with your new password.</span>
+          <span>পাসওয়ার্ড সফলভাবে রিসেট হয়েছে! আপনার নতুন পাসওয়ার্ড দিয়ে লগইন করুন।</span>
         </div>
       )}
 
@@ -87,7 +87,7 @@ export default function LoginForm({
       {resendSuccess && (
         <div className="mb-6 flex items-start gap-3 rounded-lg border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-700">
           <span className="material-symbols-outlined text-[18px] mt-px shrink-0">check_circle</span>
-          <span>A new verification link has been sent to your email.</span>
+          <span>আপনার ইমেইলে নতুন ভেরিফিকেশন লিঙ্ক পাঠানো হয়েছে।</span>
         </div>
       )}
 
@@ -105,7 +105,7 @@ export default function LoginForm({
               onClick={onResend}
               className="text-xs text-primary font-bold hover:underline self-start ml-7 mt-1 disabled:opacity-50"
             >
-              {resending ? 'Resending link...' : 'Resend verification link'}
+              {resending ? 'লিঙ্ক পুনরায় পাঠানো হচ্ছে...' : 'ভেরিফিকেশন লিঙ্ক পুনরায় পাঠান'}
             </button>
           )}
         </div>
@@ -119,11 +119,10 @@ export default function LoginForm({
             <Input
               {...register('identifier')}
               disabled={loading}
-              className={`w-full h-14 px-4 border bg-white rounded-lg focus:ring-2 focus:ring-primary-container/20 focus:border-primary-container transition-all duration-200 outline-none text-on-surface peer placeholder:text-transparent ${
-                errors.identifier ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-outline-variant'
-              }`}
+              className={`w-full h-14 px-4 border bg-white rounded-lg focus:ring-2 focus:ring-primary-container/20 focus:border-primary-container transition-all duration-200 outline-none text-on-surface peer placeholder:text-transparent ${errors.identifier ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-outline-variant'
+                }`}
               id="identifier"
-              placeholder="Email or Phone Number"
+              placeholder="ইমেইল অথবা ফোন নম্বর"
               type="text"
               autoComplete="email tel"
             />
@@ -131,7 +130,7 @@ export default function LoginForm({
               className="absolute left-4 top-4 text-on-surface-variant transition-all duration-200 pointer-events-none peer-focus:-top-2 peer-focus:left-2 peer-focus:text-xs peer-focus:text-primary-container peer-focus:bg-white peer-focus:px-1 peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-2 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-primary-container peer-[:not(:placeholder-shown)]:bg-white peer-[:not(:placeholder-shown)]:px-1"
               htmlFor="identifier"
             >
-              Email or Phone Number
+              ইমেইল অথবা ফোন নম্বর
             </label>
           </div>
           {errors.identifier && (
@@ -146,11 +145,10 @@ export default function LoginForm({
               <Input
                 {...register('password')}
                 disabled={loading}
-                className={`w-full h-14 pl-4 pr-12 border bg-white rounded-lg focus:ring-2 focus:ring-primary-container/20 focus:border-primary-container transition-all duration-200 outline-none text-on-surface peer placeholder:text-transparent ${
-                  errors.password ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-outline-variant'
-                }`}
+                className={`w-full h-14 pl-4 pr-12 border bg-white rounded-lg focus:ring-2 focus:ring-primary-container/20 focus:border-primary-container transition-all duration-200 outline-none text-on-surface peer placeholder:text-transparent ${errors.password ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-outline-variant'
+                  }`}
                 id="password"
-                placeholder="Password"
+                placeholder="পাসওয়ার্ড"
                 type={showPassword ? 'text' : 'password'}
                 autoComplete="current-password"
               />
@@ -158,7 +156,7 @@ export default function LoginForm({
                 className="absolute left-4 top-4 text-on-surface-variant transition-all duration-200 pointer-events-none peer-focus:-top-2 peer-focus:left-2 peer-focus:text-xs peer-focus:text-primary-container peer-focus:bg-white peer-focus:px-1 peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-2 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-primary-container peer-[:not(:placeholder-shown)]:bg-white peer-[:not(:placeholder-shown)]:px-1"
                 htmlFor="password"
               >
-                Password
+                পাসওয়ার্ড
               </label>
               <button
                 type="button"
@@ -185,11 +183,11 @@ export default function LoginForm({
                 onCheckedChange={(v) => setValue('rememberMe', v === true)}
               />
               <span className="text-label-sm text-on-surface-variant group-hover:text-on-surface transition-colors">
-                Remember me
+                মনে রাখুন
               </span>
             </label>
             <Link className={`text-label-sm text-primary hover:underline font-medium ${loading ? 'pointer-events-none opacity-50' : ''}`} href="/auth/forgot-password">
-              Forgot Password?
+              পাসওয়ার্ড ভুলে গেছেন?
             </Link>
           </div>
         </div>
@@ -205,11 +203,11 @@ export default function LoginForm({
           {loading ? (
             <>
               <span className="material-symbols-outlined animate-spin text-[20px]">sync</span>
-              <span>Validating...</span>
+              <span>যাচাই করা হচ্ছে...</span>
             </>
           ) : (
             <>
-              <span>Log In</span>
+              <span>লগইন করুন</span>
               <span className="material-symbols-outlined text-[20px]">login</span>
             </>
           )}
@@ -223,7 +221,7 @@ export default function LoginForm({
         </div>
         <div className="relative flex justify-center text-label-sm">
           <span className="px-4 bg-surface-container-lowest text-on-surface-variant">
-            OR CONTINUE WITH
+            অথবা কন্টিনিউ করুন
           </span>
         </div>
       </div>
@@ -242,23 +240,22 @@ export default function LoginForm({
             <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"></path>
             <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path>
           </svg>
-          <span className="text-label-sm font-medium text-on-surface">Continue with Google</span>
+          <span className="text-label-sm font-medium text-on-surface">গুগলের মাধ্যমে প্রবেশ করুন</span>
         </Button>
       </div>
 
       {/* Sign Up Link */}
       <div className="mt-10 pt-6 border-t border-outline-variant/30 text-center">
         <p className="font-body-md text-on-surface-variant">
-          Don&apos;t have an account?
+          কোনো অ্যাকাউন্ট নেই?
           <Link
-            className={`text-primary font-bold hover:underline ml-1 ${
-              loading ? 'pointer-events-none opacity-50' : ''
-            }`}
+            className={`text-primary font-bold hover:underline ml-1 ${loading ? 'pointer-events-none opacity-50' : ''
+              }`}
             href="/auth/sign-up"
             onClick={(e) => loading && e.preventDefault()}
             prefetch
           >
-            Sign Up
+            সাইন আপ করুন
           </Link>
         </p>
       </div>

@@ -2,22 +2,64 @@
 
 import { usePathname, useRouter } from "next/navigation"
 import { useEffect } from "react"
+import { useQuery } from "@tanstack/react-query"
 import { authClient } from "@workspace/auth/client"
+import { trpc } from "@/trpc/client"
 import { UnauthorizedScreen } from "@/components/unauthorized-screen"
 import { useCurrentUser } from "@/modules/user/services/use-user"
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
-  const { session, roles, isSuperAdmin, isLoading } = useCurrentUser()
+  const { session, roles, isSuperAdmin, isLoading: isUserLoading } = useCurrentUser()
 
   const isAuthRoute = pathname?.startsWith("/auth")
+  const isOnboardingRoute = pathname === "/onboarding"
+
+  // Check if user has USER, STUDENT, or Student role
+  const isUserRole =
+    roles.some(
+      (role) =>
+        role.name === "USER" ||
+        role.name === "STUDENT" ||
+        role.name === "Student"
+    ) || (!isSuperAdmin && roles.length > 0)
+
+  // Fetch student profile for authenticated user
+  const studentProfileQuery = useQuery({
+    ...trpc.student.getProfile.queryOptions(),
+    enabled: !!session && isUserRole,
+    staleTime: 5 * 60 * 1000,
+  })
 
   useEffect(() => {
-    if (!isAuthRoute && !isLoading && !session) {
+    // 1. Unauthenticated -> redirect to sign-in
+    if (!isAuthRoute && !isUserLoading && !session) {
       router.push("/auth/sign-in")
+      return
     }
-  }, [isAuthRoute, session, isLoading, router])
+
+    // 2. Authenticated user with USER role who hasn't completed onboarding -> redirect to /onboarding
+    if (
+      session &&
+      !isUserLoading &&
+      !studentProfileQuery.isLoading &&
+      isUserRole &&
+      !studentProfileQuery.data &&
+      !isOnboardingRoute
+    ) {
+      router.push("/onboarding")
+    }
+  }, [
+    isAuthRoute,
+    isOnboardingRoute,
+    session,
+    isUserLoading,
+    studentProfileQuery.isLoading,
+    studentProfileQuery.data,
+    isUserRole,
+    router,
+  ])
 
   const handleSignOut = async () => {
     await authClient.signOut()
@@ -29,7 +71,8 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     return <>{children}</>
   }
 
-  if (isLoading) {
+  // Loading state for session or student profile check
+  if (isUserLoading || (!!session && isUserRole && studentProfileQuery.isLoading)) {
     return (
       <div className="flex min-h-svh items-center justify-center bg-surface">
         <div className="flex flex-col items-center gap-4">
@@ -37,7 +80,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
             sync
           </span>
           <span className="text-sm font-medium text-on-surface-variant">
-            Checking authorization...
+            Checking authorization & onboarding status...
           </span>
         </div>
       </div>
@@ -48,7 +91,13 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     return null
   }
 
-  if (!isSuperAdmin) {
+  // Allow access if user is on /onboarding route
+  if (isOnboardingRoute) {
+    return <>{children}</>
+  }
+
+  // If not super admin and not a standard user role, show unauthorized screen
+  if (!isSuperAdmin && !isUserRole) {
     return (
       <UnauthorizedScreen
         email={session.user.email}

@@ -4,14 +4,20 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { authClient } from "@workspace/auth/client"
 import Image from "next/image"
+import {
+  LayoutDashboard,
+  BookOpen,
+  ClipboardList,
+  User,
+  Settings,
+  LogOut,
+} from "lucide-react"
 
 const navItems = [
-  { href: "/", label: "Dashboard", icon: "dashboard" },
-  { href: "/users", label: "Users", icon: "group" },
-  { href: "/schedule", label: "Batch Schedule", icon: "calendar_month" },
-  { href: "/exams", label: "Exams", icon: "quiz" },
-  { href: "/reports", label: "Progress Reports", icon: "analytics" },
-  { href: "/fees", label: "Fees", icon: "payments" },
+  { href: "/", label: "ড্যাশবোর্ড", mobileLabel: "হোম", icon: LayoutDashboard },
+  { href: "/question-bank", label: "প্রশ্নব্যাংক", mobileLabel: "প্রশ্নব্যাংক", icon: BookOpen },
+  { href: "/exams", label: "পরীক্ষা", mobileLabel: "পরীক্ষা", icon: ClipboardList },
+  { href: "/profile", label: "প্রোফাইল", mobileLabel: "প্রোফাইল", icon: User },
 ]
 
 export function SideNav() {
@@ -38,11 +44,11 @@ export function SideNav() {
             />
           </div>
           <div className="flex flex-col">
-            <h2 className="font-extrabold text-headline-md font-headline-md text-on-surface leading-none tracking-tight">
-              Basic
+            <h2 className="font-extrabold text-xl text-on-surface leading-none tracking-tight">
+              বেসিক
             </h2>
-            <span className="mt-1 font-label-sm text-label-sm text-outline uppercase tracking-wider">
-              Education Care
+            <span className="mt-1 text-xs font-semibold text-outline uppercase tracking-wider">
+              এডুকেশন কেয়ার
             </span>
           </div>
         </div>
@@ -53,17 +59,19 @@ export function SideNav() {
         <div className="flex flex-col">
           {navItems.map((item) => {
             const isActive = pathname === item.href
+            const Icon = item.icon
+
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`group flex items-center gap-4 px-6 py-3 transition-all duration-200 ${isActive
-                  ? "sidebar-item-active font-bold text-primary border-r-4 border-primary bg-surface-container-high"
-                  : "text-on-surface-variant hover:bg-surface-container-high"
+                className={`group flex items-center gap-3.5 px-6 py-3.5 transition-all duration-200 ${isActive
+                    ? "sidebar-item-active font-bold text-primary border-r-4 border-primary bg-surface-container-high"
+                    : "text-on-surface-variant hover:bg-surface-container-high font-medium"
                   }`}
               >
-                <span className="material-symbols-outlined">{item.icon}</span>
-                <span className="font-label-sm text-label-sm uppercase tracking-wider">
+                <Icon className="h-5 w-5 shrink-0" />
+                <span className="text-base font-semibold">
                   {item.label}
                 </span>
               </Link>
@@ -76,19 +84,20 @@ export function SideNav() {
       <div className="border-t border-outline-variant/30 py-4">
         <Link
           href="/settings"
-          className="group flex items-center gap-4 px-6 py-3 text-on-surface-variant transition-all duration-200 hover:bg-surface-container-high"
+          className="group flex items-center gap-3.5 px-6 py-3.5 text-on-surface-variant transition-all duration-200 hover:bg-surface-container-high font-medium"
         >
-          <span className="material-symbols-outlined">settings</span>
-          <span className="font-label-sm text-label-sm uppercase tracking-wider">
+          <Settings className="h-5 w-5 shrink-0" />
+          <span className="text-base font-semibold">
             Settings
           </span>
         </Link>
         <button
+          type="button"
           onClick={handleSignOut}
-          className="group flex w-full items-center gap-4 px-6 py-3 text-error transition-all duration-200 hover:bg-error-container/20 cursor-pointer"
+          className="group flex w-full items-center gap-3.5 px-6 py-3.5 text-error transition-all duration-200 hover:bg-error-container/20 cursor-pointer font-medium"
         >
-          <span className="material-symbols-outlined">logout</span>
-          <span className="font-label-sm text-label-sm uppercase tracking-wider">
+          <LogOut className="h-5 w-5 shrink-0" />
+          <span className="text-base font-semibold">
             Logout
           </span>
         </button>

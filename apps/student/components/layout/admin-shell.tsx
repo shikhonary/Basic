@@ -16,7 +16,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         <TopNav />
 
         {/* Main Content Area Canvas */}
-        <main className="flex-1 bg-surface-bright p-6 pb-24 md:p-8 md:pb-8">
+        <main className="flex-1 bg-surface-bright p-2 pb-24 md:p-8 md:pb-8">
           {children}
         </main>
       </div>

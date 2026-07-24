@@ -48,10 +48,10 @@ export default function RegisterForm({
           className="h-16 w-auto mb-8 object-contain"
         />
         <h1 className="font-headline-md text-headline-md text-on-surface text-center mb-2">
-          Create an Account
+          নতুন অ্যাকাউন্ট তৈরি করুন
         </h1>
         <p className="font-body-md text-on-surface-variant text-center">
-          Join <span className="font-bold text-primary">BEC</span> workstation
+          <span className="font-bold text-primary">BEC</span> স্টুডেন্ট পোর্টালে যুক্ত হন
         </p>
       </div>
 
@@ -74,7 +74,7 @@ export default function RegisterForm({
               className={`w-full h-14 px-4 border bg-white rounded-lg focus:ring-2 focus:ring-primary-container/20 focus:border-primary-container transition-all duration-200 outline-none text-on-surface peer placeholder:text-transparent ${errors.name ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-outline-variant'
                 }`}
               id="fullName"
-              placeholder="Full Name"
+              placeholder="সম্পূর্ণ নাম"
               type="text"
               autoComplete="name"
             />
@@ -82,7 +82,7 @@ export default function RegisterForm({
               className="absolute left-4 top-4 text-on-surface-variant transition-all duration-200 pointer-events-none peer-focus:-top-2 peer-focus:left-2 peer-focus:text-xs peer-focus:text-primary-container peer-focus:bg-white peer-focus:px-1 peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-2 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-primary-container peer-[:not(:placeholder-shown)]:bg-white peer-[:not(:placeholder-shown)]:px-1"
               htmlFor="fullName"
             >
-              Full Name
+              সম্পূর্ণ নাম
             </label>
           </div>
           {errors.name && (
@@ -99,7 +99,7 @@ export default function RegisterForm({
               className={`w-full h-14 px-4 border bg-white rounded-lg focus:ring-2 focus:ring-primary-container/20 focus:border-primary-container transition-all duration-200 outline-none text-on-surface peer placeholder:text-transparent ${errors.identifier ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-outline-variant'
                 }`}
               id="identifier"
-              placeholder="Email or Phone Number"
+              placeholder="ইমেইল অথবা ফোন নম্বর"
               type="text"
               autoComplete="email tel"
             />
@@ -107,7 +107,7 @@ export default function RegisterForm({
               className="absolute left-4 top-4 text-on-surface-variant transition-all duration-200 pointer-events-none peer-focus:-top-2 peer-focus:left-2 peer-focus:text-xs peer-focus:text-primary-container peer-focus:bg-white peer-focus:px-1 peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-2 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-primary-container peer-[:not(:placeholder-shown)]:bg-white peer-[:not(:placeholder-shown)]:px-1"
               htmlFor="identifier"
             >
-              Email or Phone Number
+              ইমেইল অথবা ফোন নম্বর
             </label>
           </div>
           {errors.identifier && (
@@ -125,7 +125,7 @@ export default function RegisterForm({
                 className={`w-full h-14 pl-4 pr-12 border bg-white rounded-lg focus:ring-2 focus:ring-primary-container/20 focus:border-primary-container transition-all duration-200 outline-none text-on-surface peer placeholder:text-transparent ${errors.password ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-outline-variant'
                   }`}
                 id="password"
-                placeholder="Password"
+                placeholder="পাসওয়ার্ড"
                 type={showPassword ? 'text' : 'password'}
                 autoComplete="new-password"
               />
@@ -133,7 +133,7 @@ export default function RegisterForm({
                 className="absolute left-4 top-4 text-on-surface-variant transition-all duration-200 pointer-events-none peer-focus:-top-2 peer-focus:left-2 peer-focus:text-xs peer-focus:text-primary-container peer-focus:bg-white peer-focus:px-1 peer-[:not(:placeholder-shown)]:-top-2 peer-[:not(:placeholder-shown)]:left-2 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:text-primary-container peer-[:not(:placeholder-shown)]:bg-white peer-[:not(:placeholder-shown)]:px-1"
                 htmlFor="password"
               >
-                Password
+                পাসওয়ার্ড
               </label>
               <button
                 type="button"
@@ -160,7 +160,7 @@ export default function RegisterForm({
                 onCheckedChange={(v) => setValue('agreed', v === true, { shouldValidate: true })}
               />
               <span className="text-label-sm text-on-surface-variant group-hover:text-on-surface transition-colors">
-                I agree to the <Link href="/terms-of-service" className='hover:underline'>Terms of Service</Link>
+                আমি <Link href="/terms-of-service" className='hover:underline'>ব্যবহারের শর্তাবলীতে</Link> সম্মত
               </span>
             </label>
             {errors.agreed && (
@@ -179,11 +179,11 @@ export default function RegisterForm({
           {loading ? (
             <>
               <span className="material-symbols-outlined animate-spin text-[20px]">sync</span>
-              <span>Creating account...</span>
+              <span>অ্যাকাউন্ট তৈরি হচ্ছে...</span>
             </>
           ) : (
             <>
-              <span>Sign Up</span>
+              <span>সাইন আপ করুন</span>
               <span className="material-symbols-outlined text-[20px]">person_add</span>
             </>
           )}
@@ -197,7 +197,7 @@ export default function RegisterForm({
         </div>
         <div className="relative flex justify-center text-label-sm">
           <span className="px-4 bg-surface-container-lowest text-on-surface-variant">
-            OR CONTINUE WITH
+            অথবা কন্টিনিউ করুন
           </span>
         </div>
       </div>
@@ -216,14 +216,14 @@ export default function RegisterForm({
             <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"></path>
             <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path>
           </svg>
-          <span className="text-label-sm font-medium text-on-surface">Continue with Google</span>
+          <span className="text-label-sm font-medium text-on-surface">গুগলের মাধ্যমে প্রবেশ করুন</span>
         </Button>
       </div>
 
       {/* Login Link */}
       <div className="mt-10 pt-6 border-t border-outline-variant/30 text-center">
         <p className="font-body-md text-on-surface-variant">
-          Already have an account?
+          ইতিমধ্যেই একটি অ্যাকাউন্ট আছে?
           <Link
             className={`text-primary font-bold hover:underline ml-1 ${loading ? 'pointer-events-none opacity-50' : ''
               }`}
@@ -231,7 +231,7 @@ export default function RegisterForm({
             onClick={(e) => loading && e.preventDefault()}
             prefetch
           >
-            Log In
+            লগইন করুন
           </Link>
         </p>
       </div>

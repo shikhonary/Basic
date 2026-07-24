@@ -1,54 +1,90 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { authClient } from '@workspace/auth/client';
 import ForgotPasswordForm, { forgotPasswordSchema, ForgotPasswordInput } from '../components/ForgotPasswordForm';
+import PhoneOtpVerificationCard from '../components/PhoneOtpVerificationCard';
+import ResetPasswordForm, { resetPasswordSchema, ResetPasswordInput } from '../components/ResetPasswordForm';
 
+/**
+ * Domain used for internally-generated emails for phone-based registrations.
+ * Must match the value in packages/auth/src/server/auth.ts
+ */
+const PHONE_EMAIL_DOMAIN = 'phone.bec.local';
+
+/**
+ * Check if a string is an 11-digit phone number (digits only).
+ */
+function isPhoneNumber(value: string): boolean {
+  const digitsOnly = value.replace(/\D/g, '');
+  return digitsOnly.length === 11;
+}
+
+type Step = 'IDENTIFIER' | 'SENT';
 
 export default function ForgotPasswordPage() {
-  const [success, setSuccess] = useState(false);
-  const [emailSentTo, setEmailSentTo] = useState('');
+  const [step, setStep] = useState<Step>('IDENTIFIER');
+  const [sentTo, setSentTo] = useState('');
+  const [isPhoneSent, setIsPhoneSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Form for Email or Phone
   const {
-    register,
-    handleSubmit,
-    formState: { errors },
+    register: registerIdentifier,
+    handleSubmit: handleSubmitIdentifier,
+    formState: { errors: errorsIdentifier },
   } = useForm<ForgotPasswordInput>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: {
-      email: '',
+      identifier: '',
     },
   });
 
-  const onSubmit: SubmitHandler<ForgotPasswordInput> = async (values) => {
+  const onSubmitIdentifier: SubmitHandler<ForgotPasswordInput> = async (values) => {
     setError(null);
     setLoading(true);
 
     try {
+      const identifier = values.identifier.trim();
+      const isPhone = isPhoneNumber(identifier);
+
+      // For phone registration: generate the internal email (e.g. 01712345678@phone.bec.local)
+      // For email registration: use the email directly
+      const email = isPhone
+        ? `${identifier.replace(/\D/g, '')}@${PHONE_EMAIL_DOMAIN}`
+        : identifier;
+
       const { error: resetError } = await authClient.requestPasswordReset({
-        email: values.email,
+        email,
         redirectTo: `${window.location.origin}/auth/reset-password`,
       });
 
       if (resetError) {
-        setError(resetError.message ?? 'Failed to send password reset email.');
-      } else {
-        setEmailSentTo(values.email);
-        setSuccess(true);
+        setError(
+          resetError.message ??
+            (isPhone
+              ? 'পাসওয়ার্ড রিসেট লিঙ্ক এসএমএস পাঠানো সম্ভব হয়নি।'
+              : 'পাসওয়ার্ড রিসেট ইমেইল পাঠানো সম্ভব হয়নি।')
+        );
+        return;
       }
+
+      setSentTo(identifier);
+      setIsPhoneSent(isPhone);
+      setStep('SENT');
     } catch (err: any) {
-      setError(err?.message ?? 'An unexpected error occurred.');
+      setError(err?.message ?? 'একটি অপ্রত্যাশিত সমস্যা ঘটেছে।');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="bg-surface text-on-surface min-h-screen flex flex-col font-body-md overflow-x-hidden">
+    <div className="bg-surface text-on-surface min-h-screen flex flex-col font-body-md font-solaiman overflow-x-hidden">
       <style dangerouslySetInnerHTML={{
         __html: `
         .fade-in {
@@ -73,13 +109,14 @@ export default function ForgotPasswordPage() {
         <div className="w-full max-w-[480px] fade-in">
           <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-8 md:p-12 shadow-[0_4px_20px_-2px_rgba(31,41,55,0.08)]">
             <ForgotPasswordForm
-              register={register}
-              errors={errors}
-              success={success}
-              emailSentTo={emailSentTo}
+              register={registerIdentifier}
+              errors={errorsIdentifier}
+              success={step === 'SENT'}
+              isPhoneSent={isPhoneSent}
+              sentTo={sentTo}
               error={error}
               loading={loading}
-              onSubmit={handleSubmit(onSubmit)}
+              onSubmit={handleSubmitIdentifier(onSubmitIdentifier)}
             />
           </div>
 
@@ -87,11 +124,11 @@ export default function ForgotPasswordPage() {
           <div className="mt-8 flex justify-center gap-6">
             <div className="flex items-center gap-2 text-on-surface-variant/60">
               <span className="material-symbols-outlined text-[16px]">verified_user</span>
-              <span className="text-label-sm">End-to-end Encrypted</span>
+              <span className="text-label-sm">এন্ড-টু-এন্ড এনক্রিপ্টেড</span>
             </div>
             <div className="flex items-center gap-2 text-on-surface-variant/60">
               <span className="material-symbols-outlined text-[16px]">public</span>
-              <span className="text-label-sm">v2.4.1 (Stable)</span>
+              <span className="text-label-sm">v2.4.1 (স্টেবল)</span>
             </div>
           </div>
         </div>

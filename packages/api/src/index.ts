@@ -25,4 +25,55 @@ export type {
   DeleteUserInput,
 } from "./routers/user/user.schema"
 export type { RoleForSelectionInput } from "./routers/role/role.schema"
-
+export type {
+  ListAcademicClassesInput,
+  GetAcademicClassInput,
+  AcademicClassForSelectionInput,
+  CreateAcademicClassInput,
+  UpdateAcademicClassInput,
+  DeleteAcademicClassInput,
+} from "./routers/academic-class/academic-class.schema"
+export type {
+  ListSubjectsInput,
+  GetSubjectInput,
+  SubjectForSelectionInput,
+  CreateSubjectInput,
+  UpdateSubjectInput,
+  DeleteSubjectInput,
+  AssignAcademicClassesInput,
+} from "./routers/subject/subject.schema"
+export type {
+  ListChaptersInput,
+  GetChapterInput,
+  ChapterForSelectionInput,
+  CreateChapterInput,
+  UpdateChapterInput,
+  DeleteChapterInput,
+  ReorderChaptersInput,
+  ChapterStatsInput,
+} from "./routers/chapter/chapter.schema"
+export type {
+  ListMcqsInput,
+  GetMcqInput,
+  McqStatsInput,
+  CreateMcqInput,
+  ImportMcqsInput,
+  UpdateMcqInput,
+  DeleteMcqInput,
+  BulkDeleteMcqsInput,
+  ToggleMcqActiveInput,
+  McqSortOption,
+} from "./routers/mcq/mcq.schema"
+export type {
+  ListExamsInput,
+  GetExamInput,
+  ExamStatsInput,
+  CreateExamInput,
+  UpdateExamInput,
+  DeleteExamInput,
+  BulkDeleteExamsInput,
+  ToggleExamStatusInput,
+  AddExamSubjectsInput,
+  RemoveExamSubjectInput,
+  ExamSortOption,
+} from "./routers/exam/exam.schema"

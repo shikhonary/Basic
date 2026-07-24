@@ -21,6 +21,7 @@ model User {
   sessions            Session[]
   accounts            Account[]
   roles               Role[]
+  student             Student?
 
   @@index([email])
   @@map("user")
@@ -75,8 +76,8 @@ model Verification {
 }
 
 model Role {
-  id          String   @id @default(cuid())
-  name        String   @unique
+  id          String  @id @default(cuid())
+  name        String  @unique
   description String?
 
   users User[]
@@ -85,4 +86,315 @@ model Role {
   updatedAt DateTime @updatedAt
 
   @@map("role")
+}
+
+model AcademicClass {
+  id       String                 @id @default(uuid())
+  nameBn   String
+  nameEn   String
+  level    String
+  position Int                    @default(0)
+  students Student[]
+  subjects AcademicClassSubject[]
+  exams    Exam[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([nameEn])
+  @@index([position])
+  @@index([level])
+  @@map("academic_class")
+}
+
+model Subject {
+  id       String  @id @default(uuid())
+  name     String
+  nameBn   String
+  level    String
+  group    String?
+  position Int     @default(0)
+
+  academicClasses AcademicClassSubject[]
+  chapters        Chapter[]
+  mcqs            Mcq[]
+  examSubjects    ExamSubject[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([level])
+  @@index([position])
+  @@index([group])
+}
+
+model AcademicClassSubject {
+  id String @id @default(uuid())
+
+  academicClassId String
+  academicClass   AcademicClass @relation(fields: [academicClassId], references: [id], onDelete: Restrict)
+
+  subjectId String
+  subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([academicClassId, subjectId])
+  @@index([academicClassId])
+  @@index([subjectId])
+}
+
+model Chapter {
+  id       String @id @default(uuid())
+  name     String
+  nameBn   String
+  position Int    @default(0)
+
+  subjectId String
+  subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+
+  mcqs Mcq[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([subjectId])
+}
+
+model Student {
+  id          String    @id @default(uuid())
+  session     String?
+  studentId   Int
+  name        String
+  nameBn      String
+  fName       String?
+  mName       String?
+  gender      String?
+  dob         DateTime?
+  nationality String?
+  religion    String?
+  imageUrl    String?
+
+  section String?
+  shift   String?
+  group   String?
+  roll    Int?
+
+  fPhone String?
+  mPhone String
+
+  presentAddress   String?
+  permanentAddress String?
+
+  academicClassId String
+  academicClass   AcademicClass @relation(fields: [academicClassId], references: [id], onDelete: Restrict)
+
+  userId String? @unique
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  examAttempts ExamAttempt[]
+
+  @@index([userId])
+  @@index([studentId])
+}
+
+model Mcq {
+  id          String   @id @default(uuid())
+  question    String
+  answer      String
+  options     String[]
+  statements  String[] @default([])
+  type        String
+  isMath      Boolean  @default(false)
+  reference   String[] @default([])
+  explanation String?
+  questionUrl String?
+  context     String?
+  contextUrl  String?
+
+  subjectId String
+  subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+
+  chapterId String
+  chapter   Chapter @relation(fields: [chapterId], references: [id], onDelete: Restrict)
+
+  isActive Boolean @default(true)
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  answerHistories AnswerHistory[]
+
+  @@index([chapterId])
+  @@index([chapterId, type])
+  @@index([isMath])
+  @@index([subjectId, chapterId])
+  @@index([subjectId])
+  @@index([subjectId, type])
+  @@index([type])
+  @@map("Mcq")
+}
+
+model Exam {
+  id              String   @id @default(uuid())
+  title           String
+  total           Int
+  duration        Int
+  totalMcq        Int
+  startDate       DateTime
+  endDate         DateTime
+  hasSuffle       Boolean  @default(false)
+  hasRandom       Boolean  @default(false)
+  hasNegativeMark Boolean  @default(false)
+  negativeMark    Float    @default(0)
+  type            String
+
+  status String @default("Pending")
+
+  academicClassId String
+  academicClass   AcademicClass @relation(fields: [academicClassId], references: [id], onDelete: Restrict)
+
+  examSubjects ExamSubject[]
+  examAttempts ExamAttempt[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([title])
+  @@index([status])
+  @@index([academicClassId])
+  @@index([createdAt])
+  @@index([status, createdAt])
+}
+
+model ExamAttempt {
+  id   String @id @default(uuid())
+  type String
+
+  // Answer tracking - store detailed answer information as JSON
+  // Format: [{mcqId, selectedOption, isCorrect, answeredAt, timeSpent}]
+  answers Json[] @default([])
+
+  // Performance metrics - denormalized for fast queries
+  score            Float @default(0)
+  correctAnswers   Int   @default(0)
+  wrongAnswers     Int   @default(0)
+  skippedQuestions Int   @default(0)
+
+  // Streak tracking for gamification
+  currentStreak Int @default(0)
+  bestStreak    Int @default(0)
+
+  // Timing information
+  startTime      DateTime?
+  endTime        DateTime?
+  duration       Int?      @default(0) // Total duration in seconds
+  lastActivityAt DateTime? // Last time user interacted (for monitoring)
+
+  // Question management
+  totalQuestions   Int // Total questions at attempt start
+  answeredCount    Int   @default(0) // Denormalized count
+  flaggedQuestions Int[] @default([])
+
+  // Exam status and behavior
+  status         String  @default("Not Started") // Not Started, In Progress, Submitted, Auto-Submitted, Abandoned
+  submissionType String? // Manual, Auto-TimeUp, Auto-TabSwitch
+
+  // Features and settings - snapshot at attempt creation
+  enableAiFeature Boolean @default(false)
+  hasNegativeMark Boolean @default(false) // Copy from exam at creation
+  negativeMark    Float   @default(0) // Copy from exam at creation
+  hasShuffle      Boolean @default(false)
+  hasRandom       Boolean @default(false)
+
+  // Anti-cheat tracking
+  tabSwitches    Int        @default(0)
+  tabSwitchTimes DateTime[] @default([])
+  warnings       Json[]     @default([]) // Store warning events
+
+  // Feedback and review
+  feedbackStatus String  @default("Pending") // Pending, Reviewed, Resolved
+  reviewNotes    String? // Admin notes
+
+  // Relations
+  examId String
+  exam   Exam   @relation(fields: [examId], references: [id], onDelete: Cascade)
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  answerHistory AnswerHistory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Indexes for performance
+  @@index([studentId])
+  @@index([examId])
+  @@index([status])
+  @@index([score])
+  @@index([createdAt])
+  @@index([studentId, examId])
+  @@index([studentId, status])
+  @@index([studentId, createdAt])
+  @@index([examId, status])
+  @@index([status, createdAt])
+  @@index([studentId, score])
+  @@index([lastActivityAt])
+  @@index([submissionType])
+  @@index([bestStreak])
+}
+
+model AnswerHistory {
+  id String @id @default(uuid())
+
+  attemptId String
+  attempt   ExamAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+
+  mcqId          String
+  mcq            Mcq    @relation(fields: [mcqId], references: [id], onDelete: Cascade)
+  questionNumber Int // Position in exam
+
+  // Answer details
+  selectedOption String
+  correctAnswer  String
+  isCorrect      Boolean
+
+  // Timing
+  answeredAt DateTime @default(now())
+  timeSpent  Int? // Seconds spent on this question
+
+  // Change tracking (if you allow answer changes)
+  previousAnswer String?
+  isChanged      Boolean @default(false)
+  changeCount    Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([attemptId])
+  @@index([mcqId])
+  @@index([attemptId, questionNumber])
+  @@index([answeredAt])
+  @@index([isCorrect])
+}
+
+model ExamSubject {
+  id String @id @default(uuid())
+
+  examId String
+  exam   Exam   @relation(fields: [examId], references: [id], onDelete: Cascade)
+
+  subjectId String
+  subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([examId, subjectId])
+  @@index([examId])
+  @@index([subjectId])
+  @@map("exam_subject")
 }

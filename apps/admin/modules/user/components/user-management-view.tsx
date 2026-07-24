@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react"
 import { MOCK_USERS, MOCK_USER_STATS } from "../data/mock-users"
 import type { User, UserFilterState } from "../types"
+import { useUserSearchParams, type UserSortOption } from "../hooks/use-user-search-params"
 import { UserPageHeader } from "./user-page-header"
 import { UserFilterBar } from "./user-filter-bar"
 import { UserDataTable } from "./user-data-table"
@@ -14,27 +15,36 @@ const ITEMS_PER_PAGE = 4
 
 export function UserManagementView() {
   const [users, setUsers] = useState<User[]>(MOCK_USERS)
-  const [filters, setFilters] = useState<UserFilterState>({
-    search: "",
-    role: "All",
-    status: "All",
-    sort: "desc",
-  })
-  const [currentPage, setCurrentPage] = useState(1)
+  const [{ search, role, status, sort, page: currentPage }, setSearchParams] = useUserSearchParams()
+
+  const filters: UserFilterState = useMemo(
+    () => ({
+      search,
+      role,
+      status,
+      sort,
+    }),
+    [search, role, status, sort]
+  )
 
   const handleFilterChange = (newFilters: Partial<UserFilterState>) => {
-    setFilters((prev) => ({ ...prev, ...newFilters }))
-    setCurrentPage(1)
+    setSearchParams({
+      search: newFilters.search,
+      role: newFilters.role,
+      status: newFilters.status,
+      sort: newFilters.sort as UserSortOption | undefined,
+      page: 1,
+    })
   }
 
   const handleResetFilters = () => {
-    setFilters({
+    setSearchParams({
       search: "",
       role: "All",
       status: "All",
       sort: "desc",
+      page: 1,
     })
-    setCurrentPage(1)
   }
 
   // Filtered and sorted users calculation
@@ -140,7 +150,7 @@ export function UserManagementView() {
           startIndex={filteredUsers.length > 0 ? startIndex + 1 : 0}
           endIndex={Math.min(startIndex + ITEMS_PER_PAGE, filteredUsers.length)}
           totalItems={filteredUsers.length}
-          onPageChange={setCurrentPage}
+          onPageChange={(page) => setSearchParams({ page })}
         />
       </Card>
 

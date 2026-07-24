@@ -13,6 +13,7 @@
  *                             ctx: { headers, session, db }
  *  - `tenantProcedure`     — requires session + injects main + tenant DBs
  *                             ctx: { headers, session, db, tenantDb }
+ *  - `studentProcedure`    — requires session + STUDENT role check
  *
  * Context design:
  *  - `createTRPCContext` only forwards the raw `Headers` — it does NOT fetch
@@ -29,6 +30,7 @@ import { tenantDb, getTenantDb } from "@workspace/db/tenant"
 import type { TenantPrismaClient } from "@workspace/db/tenant"
 import superjson from "superjson"
 import { ZodError } from "zod"
+import { ROLES } from "@workspace/utils"
 
 // ---------------------------------------------------------------------------
 // Context types
@@ -172,31 +174,38 @@ export const publicProcedure = t.procedure.use(loggingMiddleware)
  * Resolves the session lazily (only when this procedure runs), so public
  * procedures never pay the auth lookup cost.
  *
- * NOTE (dev): Auth check is currently a passthrough for local development.
- * To enable auth, uncomment the block below and remove the passthrough.
- *
  * Throws `UNAUTHORIZED` if there is no valid session.
  */
 export const protectedProcedure = t.procedure
   .use(loggingMiddleware)
   .use(async ({ ctx, next }) => {
-    const session = await auth.api.getSession({ headers: ctx.headers })
+    let session: Awaited<ReturnType<typeof auth.api.getSession>> = null
+    try {
+      session = await auth.api.getSession({ headers: ctx.headers })
+    } catch (err) {
+      console.error("[tRPC protectedProcedure] Session resolution error:", err)
+    }
+
+    if (!session) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "You must be signed in to perform this action.",
+      })
+    }
 
     let roles: Role[] = []
-    if (session?.user?.id) {
+    if (session.user?.id) {
       const userWithRoles = await db.user.findUnique({
         where: { id: session.user.id },
         select: { roles: true },
       })
-      roles = userWithRoles?.roles ?? []
+      roles = (userWithRoles?.roles as Role[]) ?? []
     }
 
     return next({
       ctx: {
         ...ctx,
-        session: session as NonNullable<
-          Awaited<ReturnType<typeof auth.api.getSession>>
-        >,
+        session,
         roles,
       },
     })
@@ -244,6 +253,39 @@ export const tenantProcedure = protectedProcedure.use(({ ctx, next }) => {
       db: db as PrismaClient,
       /** Tenant Prisma client — scoped to the specific tenant via extension. */
       tenantDb: getTenantDb(tenantId) as TenantPrismaClient,
+    },
+  })
+})
+
+/**
+ * Student procedure — requires a valid session with the STUDENT role
+ * AND injects the main Prisma database client into the context.
+ * ctx: { headers, session, roles, db }
+ *
+ * Chains off `protectedProcedure` so the auth check always runs first.
+ * Throws `FORBIDDEN` if the user does not have the Student role.
+ * Safe case-insensitive role check supports both "STUDENT" and "Student".
+ */
+export const studentProcedure = protectedProcedure.use(({ ctx, next }) => {
+  const hasStudentRole = ctx.roles.some(
+    (r) =>
+      r.name === ROLES.STUDENT ||
+      r.name?.toUpperCase() === "STUDENT" ||
+      r.name === "Student",
+  )
+
+  if (!hasStudentRole) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "You must have the Student role to perform this action.",
+    })
+  }
+
+  return next({
+    ctx: {
+      ...ctx,
+      /** Main Prisma client — connected to the primary/management database. */
+      db: db as PrismaClient,
     },
   })
 })

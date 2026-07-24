@@ -4,14 +4,32 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { authClient } from "@workspace/auth/client"
 import Image from "next/image"
+import {
+  LayoutDashboard,
+  GraduationCap,
+  BookOpen,
+  Layers,
+  Users,
+  Calendar,
+  ClipboardList,
+  BarChart3,
+  CreditCard,
+  Settings,
+  LogOut,
+  HelpCircle,
+} from "lucide-react"
 
 const navItems = [
-  { href: "/", label: "Dashboard", icon: "dashboard" },
-  { href: "/users", label: "Users", icon: "group" },
-  { href: "/schedule", label: "Batch Schedule", icon: "calendar_month" },
-  { href: "/exams", label: "Exams", icon: "quiz" },
-  { href: "/reports", label: "Progress Reports", icon: "analytics" },
-  { href: "/fees", label: "Fees", icon: "payments" },
+  { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/academic-classes", label: "Classes", icon: GraduationCap },
+  { href: "/subjects", label: "Subjects", icon: BookOpen },
+  { href: "/chapters", label: "Chapters", icon: Layers },
+  { href: "/mcqs", label: "MCQs", icon: HelpCircle },
+  { href: "/users", label: "Users", icon: Users },
+  { href: "/schedule", label: "Batch Schedule", icon: Calendar },
+  { href: "/exams", label: "Exams", icon: ClipboardList },
+  { href: "/reports", label: "Progress Reports", icon: BarChart3 },
+  { href: "/fees", label: "Fees", icon: CreditCard },
 ]
 
 export function SideNav() {
@@ -53,6 +71,7 @@ export function SideNav() {
         <div className="flex flex-col">
           {navItems.map((item) => {
             const isActive = pathname === item.href
+            const Icon = item.icon
             return (
               <Link
                 key={item.href}
@@ -62,7 +81,7 @@ export function SideNav() {
                   : "text-on-surface-variant hover:bg-surface-container-high"
                   }`}
               >
-                <span className="material-symbols-outlined">{item.icon}</span>
+                <Icon className="h-5 w-5" />
                 <span className="font-label-sm text-label-sm uppercase tracking-wider">
                   {item.label}
                 </span>
@@ -78,7 +97,7 @@ export function SideNav() {
           href="/settings"
           className="group flex items-center gap-4 px-6 py-3 text-on-surface-variant transition-all duration-200 hover:bg-surface-container-high"
         >
-          <span className="material-symbols-outlined">settings</span>
+          <Settings className="h-5 w-5" />
           <span className="font-label-sm text-label-sm uppercase tracking-wider">
             Settings
           </span>
@@ -87,7 +106,7 @@ export function SideNav() {
           onClick={handleSignOut}
           className="group flex w-full items-center gap-4 px-6 py-3 text-error transition-all duration-200 hover:bg-error-container/20 cursor-pointer"
         >
-          <span className="material-symbols-outlined">logout</span>
+          <LogOut className="h-5 w-5" />
           <span className="font-label-sm text-label-sm uppercase tracking-wider">
             Logout
           </span>
