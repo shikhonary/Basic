@@ -73,6 +73,28 @@ export const getStudentExamGroupResultSchema = z.object({
 export type GetStudentExamGroupResultInput = z.infer<typeof getStudentExamGroupResultSchema>
 
 // ---------------------------------------------------------------------------
+// Student-facing schemas (studentProcedure)
+// ---------------------------------------------------------------------------
+
+/** Input for listing published exam groups for the current student's class. */
+export const studentExamGroupsSchema = z.object({
+  page: z.number().int().min(1).optional().default(1),
+  limit: z.number().int().min(1).max(100).optional().default(20),
+})
+export type StudentExamGroupsInput = z.infer<typeof studentExamGroupsSchema>
+
+/** Input for fetching a paginated leaderboard for a specific exam group. */
+export const studentExamGroupLeaderboardSchema = z.object({
+  examGroupId: z.string().min(1, "Exam Group ID is required"),
+  page: z.number().int().min(1).optional().default(1),
+  limit: z.number().int().min(1).max(100).optional().default(50),
+  sort: z.enum(["rank_asc", "score_desc", "name_asc"]).optional().default("rank_asc"),
+  query: z.string().optional(),
+})
+export type StudentExamGroupLeaderboardInput = z.infer<typeof studentExamGroupLeaderboardSchema>
+
+
+// ---------------------------------------------------------------------------
 // Mutation Schemas
 // ---------------------------------------------------------------------------
 

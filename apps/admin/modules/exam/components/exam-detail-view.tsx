@@ -42,20 +42,25 @@ interface SubjectMcqSectionProps {
   subjectId: string
   subjectName: string
   subjectNameBn?: string
+  assignedMcqIds?: string[]
 }
 
 function SubjectMcqSection({
   subjectId,
   subjectName,
   subjectNameBn,
+  assignedMcqIds = [],
 }: SubjectMcqSectionProps) {
   const { data: mcqsData, isLoading } = useMcqsList({
     subjectId,
     limit: 50,
   })
 
-  const mcqs = mcqsData?.items ?? []
-  const totalMcqs = mcqsData?.totalItems ?? mcqs.length
+  const allMcqs = mcqsData?.items ?? []
+  const mcqs = assignedMcqIds.length > 0
+    ? allMcqs.filter((m) => assignedMcqIds.includes(m.id))
+    : allMcqs
+  const totalMcqs = assignedMcqIds.length > 0 ? mcqs.length : (mcqsData?.totalItems ?? mcqs.length)
 
   return (
     <div className="space-y-4 rounded-xl border border-outline-variant/30 bg-surface-container-low p-5">
@@ -169,18 +174,16 @@ function SubjectMcqSection({
                     return (
                       <div
                         key={optIdx}
-                        className={`flex items-center gap-2 rounded-lg border p-2 text-xs ${
-                          isCorrect
+                        className={`flex items-center gap-2 rounded-lg border p-2 text-xs ${isCorrect
                             ? "border-emerald-500 bg-emerald-50 text-emerald-950 font-bold"
                             : "border-outline-variant/40 bg-surface-container-lowest text-on-surface"
-                        }`}
+                          }`}
                       >
                         <span
-                          className={`flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full font-mono text-[10px] font-bold ${
-                            isCorrect
+                          className={`flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full font-mono text-[10px] font-bold ${isCorrect
                               ? "bg-emerald-600 text-white"
                               : "bg-surface-container-high text-on-surface-variant"
-                          }`}
+                            }`}
                         >
                           {letter}
                         </span>
@@ -348,13 +351,12 @@ export function ExamDetailView({ examId }: ExamDetailViewProps) {
           </p>
           <div className="mt-2 flex items-center gap-2">
             <span
-              className={`h-2.5 w-2.5 rounded-full ${
-                exam.status === "Published"
+              className={`h-2.5 w-2.5 rounded-full ${exam.status === "Published"
                   ? "bg-emerald-500 animate-pulse"
                   : exam.status === "Pending"
-                  ? "bg-amber-500"
-                  : "bg-slate-400"
-              }`}
+                    ? "bg-amber-500"
+                    : "bg-slate-400"
+                }`}
             />
             <span className="font-headline-md text-xl font-extrabold text-on-surface">
               {exam.status}
@@ -479,6 +481,52 @@ export function ExamDetailView({ examId }: ExamDetailViewProps) {
         </div>
       </div>
 
+      {/* Associated Exam Groups Card */}
+      <div className="rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-6 shadow-xs">
+        <div className="flex items-center justify-between mb-4 border-b border-outline-variant/30 pb-3">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-xl text-primary">layers</span>
+            <h2 className="font-headline-md text-lg font-bold text-on-surface">
+              Associated Exam Groups & Model Tests
+            </h2>
+          </div>
+          <span className="text-xs font-semibold text-outline">
+            {exam.examGroupItems?.length ?? 0} group(s)
+          </span>
+        </div>
+
+        {!exam.examGroupItems || exam.examGroupItems.length === 0 ? (
+          <div className="p-4 rounded-xl bg-surface-container-low text-center text-xs text-outline">
+            This exam is standalone and not currently bundled into any Exam Group.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {exam.examGroupItems.map((item: any) => (
+              <div
+                key={item.id}
+                className="flex items-center justify-between p-4 rounded-xl border border-outline-variant/40 bg-white"
+              >
+                <div>
+                  <Link
+                    href={`/exam-groups/${item.examGroup.id}`}
+                    className="font-bold text-sm text-on-surface hover:text-primary transition-colors flex items-center gap-1.5"
+                  >
+                    <span>{item.examGroup.title}</span>
+                    <ExternalLink className="h-3 w-3 text-outline" />
+                  </Link>
+                  <p className="text-xs text-outline mt-0.5">
+                    Mode: {item.examGroup.calculationType} | Weight: {item.weightage}%
+                  </p>
+                </div>
+                <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-200 text-xs">
+                  {item.examGroup.type.replace("_", " ")}
+                </Badge>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* Linked Subjects Summary */}
       <div className="rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-6 shadow-xs">
         <div className="flex items-center justify-between mb-4 border-b border-outline-variant/30 pb-3">
@@ -557,6 +605,7 @@ export function ExamDetailView({ examId }: ExamDetailViewProps) {
                 subjectId={es.subjectId}
                 subjectName={es.subject?.name ?? "Subject"}
                 subjectNameBn={es.subject?.nameBn}
+                assignedMcqIds={es.mcqIds ?? []}
               />
             ))}
           </div>

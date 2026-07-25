@@ -12,6 +12,7 @@ import {
   createAttemptSchema,
   getAttemptResultSchema,
   getExamForAttemptSchema,
+  getExamLeaderboardSchema,
   listAvailableExamsSchema,
   listMyAttemptsSchema,
   submitAnswerSchema,
@@ -23,6 +24,7 @@ import {
   createAttempt,
   getAttemptResult,
   getExamForAttempt,
+  getExamLeaderboard,
   listAvailableExams,
   listMyAttempts,
   submitAnswer,
@@ -85,6 +87,15 @@ export const examAttemptRouter = createTRPCRouter({
     .input(getAttemptResultSchema)
     .query(({ ctx, input }) =>
       getAttemptResult(ctx.db, ctx.session.user.id, input),
+    ),
+
+  /**
+   * Get exam leaderboard / merit list for a specific exam.
+   */
+  leaderboard: studentProcedure
+    .input(getExamLeaderboardSchema)
+    .query(({ ctx, input }) =>
+      getExamLeaderboard(ctx.db, ctx.session.user.id, input),
     ),
 
   /**

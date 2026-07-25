@@ -5,7 +5,7 @@
  * business logic to `exam-group.service.ts`.
  */
 import { db } from "@workspace/db/main"
-import { createTRPCRouter, protectedProcedure } from "../../trpc"
+import { createTRPCRouter, protectedProcedure, studentProcedure } from "../../trpc"
 import {
   addExamGroupItemSchema,
   bulkDeleteExamGroupsSchema,
@@ -19,6 +19,8 @@ import {
   listExamGroupsSchema,
   removeExamGroupItemSchema,
   reorderExamGroupItemsSchema,
+  studentExamGroupLeaderboardSchema,
+  studentExamGroupsSchema,
   togglePublishExamGroupSchema,
   updateExamGroupItemSchema,
   updateExamGroupSchema,
@@ -32,8 +34,10 @@ import {
   getExamGroupById,
   getExamGroupStats,
   getStudentExamGroupResult,
+  getStudentGroupLeaderboard,
   listExamGroupResults,
   listExamGroups,
+  listStudentExamGroups,
   removeExamGroupItem,
   reorderExamGroupItems,
   togglePublishExamGroup,
@@ -147,6 +151,54 @@ export const examGroupRouter = createTRPCRouter({
     .input(getStudentExamGroupResultSchema)
     .query(async ({ ctx, input }) => {
       // If studentId is not explicitly passed, infer it from session if available
+      let targetStudentId = input.studentId
+      if (!targetStudentId) {
+        const student = await db.student.findFirst({
+          where: { userId: ctx.session.user.id },
+          select: { id: true },
+        })
+        if (!student) {
+          throw new Error("Student profile not found for current user")
+        }
+        targetStudentId = student.id
+      }
+      return getStudentExamGroupResult(db, {
+        examGroupId: input.examGroupId,
+        studentId: targetStudentId,
+      })
+    }),
+
+  // ---------------------------------------------------------------------------
+  // Student-Facing Procedures (studentProcedure)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * List published exam groups for the logged-in student's academic class.
+   * Includes the student's own rank/percentage preview on each card.
+   */
+  studentGroups: studentProcedure
+    .input(studentExamGroupsSchema)
+    .query(({ ctx, input }) =>
+      listStudentExamGroups(db, ctx.session.user.id, input)
+    ),
+
+  /**
+   * Get the full ranked leaderboard for a specific published exam group.
+   * Annotates each result row with `isCurrentUser` for the logged-in student.
+   */
+  studentLeaderboard: studentProcedure
+    .input(studentExamGroupLeaderboardSchema)
+    .query(({ ctx, input }) =>
+      getStudentGroupLeaderboard(db, ctx.session.user.id, input)
+    ),
+
+  /**
+   * Get the logged-in student's detailed result for a specific exam group,
+   * including per-exam breakdown.
+   */
+  studentMyResult: studentProcedure
+    .input(getStudentExamGroupResultSchema)
+    .query(async ({ ctx, input }) => {
       let targetStudentId = input.studentId
       if (!targetStudentId) {
         const student = await db.student.findFirst({

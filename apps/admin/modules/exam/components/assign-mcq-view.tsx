@@ -9,7 +9,7 @@ import { Badge } from "@workspace/ui/components/badge"
 import { Checkbox } from "@workspace/ui/components/checkbox"
 import { RenderMath } from "@workspace/ui/components/render-math"
 import "katex/dist/katex.min.css"
-import { useExamById } from "../services/use-exam"
+import { useExamById, useUpdateExamSubjectMcqs } from "../services/use-exam"
 import { useMcqsList } from "../../mcq/services/use-mcq"
 import {
   ArrowLeft,
@@ -32,25 +32,26 @@ const romanNumerals = ["i.", "ii.", "iii.", "iv.", "v.", "vi."]
 const optionLetters = ["A", "B", "C", "D", "E", "F"]
 
 interface SubjectMcqListProps {
+  examId: string
   examSubjectId: string
   subjectId: string
   subjectName: string
   subjectNameBn?: string
   academicClassId: string
   assignedMcqIds: string[]
-  onToggleAssign: (mcqIds: string[], assign: boolean) => void
 }
 
 function SubjectMcqSection({
+  examId,
   examSubjectId,
   subjectId,
   subjectName,
   subjectNameBn,
   academicClassId,
   assignedMcqIds,
-  onToggleAssign,
 }: SubjectMcqListProps) {
   const router = useRouter()
+  const updateSubjectMcqsMutation = useUpdateExamSubjectMcqs()
   const { data: mcqsData, isLoading } = useMcqsList({
     subjectId,
     limit: 50,
@@ -78,16 +79,40 @@ function SubjectMcqSection({
     )
   }
 
-  const handleBulkAssignSelected = () => {
-    if (selectedMcqIds.length === 0) return
-    onToggleAssign(selectedMcqIds, true)
-    toast.success(`Assigned ${selectedMcqIds.length} MCQs to exam`)
+  const handleToggleAssign = async (mcqIdsToToggle: string[], assign: boolean) => {
+    let newMcqIds: string[]
+    if (assign) {
+      newMcqIds = Array.from(new Set([...assignedMcqIds, ...mcqIdsToToggle]))
+    } else {
+      newMcqIds = assignedMcqIds.filter((id) => !mcqIdsToToggle.includes(id))
+    }
+
+    try {
+      await updateSubjectMcqsMutation.mutateAsync({
+        examId,
+        examSubjectId,
+        mcqIds: newMcqIds,
+      })
+      if (assign) {
+        toast.success(`Assigned ${mcqIdsToToggle.length} MCQ(s) to exam`)
+      } else {
+        toast.info(`Removed ${mcqIdsToToggle.length} MCQ(s) from exam`)
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update assigned MCQs")
+    }
   }
 
-  const handleBulkUnassignSelected = () => {
+  const handleBulkAssignSelected = async () => {
     if (selectedMcqIds.length === 0) return
-    onToggleAssign(selectedMcqIds, false)
-    toast.info(`Removed ${selectedMcqIds.length} MCQs from exam`)
+    await handleToggleAssign(selectedMcqIds, true)
+    setSelectedMcqIds([])
+  }
+
+  const handleBulkUnassignSelected = async () => {
+    if (selectedMcqIds.length === 0) return
+    await handleToggleAssign(selectedMcqIds, false)
+    setSelectedMcqIds([])
   }
 
   return (
@@ -410,7 +435,7 @@ function SubjectMcqSection({
                             type="button"
                             variant={isAssigned ? "outline" : "default"}
                             size="sm"
-                            onClick={() => onToggleAssign([item.id], !isAssigned)}
+                            onClick={() => handleToggleAssign([item.id], !isAssigned)}
                             className={`rounded-lg text-xs font-bold h-auto py-1.5 px-3 cursor-pointer ${
                               isAssigned
                                 ? "border-emerald-600 text-emerald-700 hover:bg-emerald-50"
@@ -453,19 +478,6 @@ export function AssignMcqView({ examId }: AssignMcqViewProps) {
   const router = useRouter()
   const { data: exam, isLoading, isError } = useExamById(examId)
 
-  // Track assigned MCQ IDs locally for instant interactive feedback
-  const [assignedMcqIds, setAssignedMcqIds] = useState<string[]>([])
-
-  const handleToggleAssign = (mcqIds: string[], assign: boolean) => {
-    setAssignedMcqIds((prev) => {
-      if (assign) {
-        return Array.from(new Set([...prev, ...mcqIds]))
-      } else {
-        return prev.filter((id) => !mcqIds.includes(id))
-      }
-    })
-  }
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-16 text-on-surface-variant">
@@ -501,6 +513,10 @@ export function AssignMcqView({ examId }: AssignMcqViewProps) {
   }
 
   const examSubjects = exam.examSubjects ?? []
+  const totalAssignedMcqCount = examSubjects.reduce(
+    (acc, es) => acc + (es.mcqIds?.length ?? 0),
+    0
+  )
 
   return (
     <div className="w-full max-w-5xl mx-auto space-y-8">
@@ -559,7 +575,7 @@ export function AssignMcqView({ examId }: AssignMcqViewProps) {
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-outline">Assigned Questions</p>
-              <p className="text-sm font-bold text-emerald-700">{assignedMcqIds.length} / {exam.totalMcq}</p>
+              <p className="text-sm font-bold text-emerald-700">{totalAssignedMcqCount} / {exam.totalMcq}</p>
             </div>
           </div>
 
@@ -616,13 +632,13 @@ export function AssignMcqView({ examId }: AssignMcqViewProps) {
           examSubjects.map((es) => (
             <SubjectMcqSection
               key={es.id}
+              examId={examId}
               examSubjectId={es.id}
               subjectId={es.subjectId}
               subjectName={es.subject?.name ?? "Subject"}
               subjectNameBn={es.subject?.nameBn}
               academicClassId={exam.academicClassId}
-              assignedMcqIds={assignedMcqIds}
-              onToggleAssign={handleToggleAssign}
+              assignedMcqIds={es.mcqIds ?? []}
             />
           ))
         )}

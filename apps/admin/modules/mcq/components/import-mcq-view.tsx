@@ -138,7 +138,7 @@ interface EditableFieldProps {
 function EditableField({
   label,
   value,
-  placeholder = "Double-click to edit...",
+  placeholder = "Click to edit...",
   multiline = false,
   onSave,
   className = "",
@@ -176,9 +176,6 @@ function EditableField({
         <div className="flex items-center justify-between mb-1">
           <span className="font-label-sm text-xs font-bold uppercase tracking-wider text-outline flex items-center gap-1">
             {label}
-            <span className="text-[10px] text-muted-foreground font-normal lowercase">
-              (double-click to edit)
-            </span>
           </span>
           {badge}
         </div>
@@ -222,7 +219,7 @@ function EditableField({
       ) : (
         <div
           onDoubleClick={() => setIsEditing(true)}
-          title="Double-click to edit"
+          title="Click to edit"
           className={cn(
             "group/edit min-h-9 cursor-pointer rounded-lg border border-transparent bg-surface-container-lowest/50 p-2.5 transition-all hover:border-primary/40 hover:bg-primary/5 hover:shadow-xs",
             !value && "italic text-outline-variant",
@@ -518,7 +515,7 @@ function EditableMcqCard({
           value={item.context || ""}
           isMath={item.isMath}
           multiline
-          placeholder="Double-click to add context/passage..."
+          placeholder="Add context/passage (optional)..."
           onSave={(newCtx) => onChange({ ...item, context: newCtx || undefined })}
         />
 
@@ -527,9 +524,6 @@ function EditableMcqCard({
           <div className="flex items-center justify-between">
             <span className="font-label-sm text-xs font-bold uppercase tracking-wider text-outline flex items-center gap-1.5">
               Statements / Sub-questions ({item.statements?.length || 0})
-              <span className="text-[10px] text-muted-foreground font-normal lowercase">
-                (double-click text to edit statement)
-              </span>
             </span>
             <Button
               type="button"
@@ -584,9 +578,6 @@ function EditableMcqCard({
           <div className="flex items-center justify-between">
             <span className="font-label-sm text-xs font-bold uppercase tracking-wider text-outline">
               Option Choices ({item.options.length})
-              <span className="ml-2 text-[10px] text-muted-foreground font-normal lowercase">
-                (click radio icon to set correct answer, double-click text to edit)
-              </span>
             </span>
             <Button
               type="button"
@@ -665,7 +656,7 @@ function EditableMcqCard({
             label="Correct Answer Value"
             value={item.answer}
             isMath={item.isMath}
-            placeholder="Double-click to edit answer..."
+            placeholder="Enter correct answer..."
             onSave={(newAns) => onChange({ ...item, answer: newAns })}
           />
 
@@ -684,7 +675,7 @@ function EditableMcqCard({
           value={item.explanation || ""}
           isMath={item.isMath}
           multiline
-          placeholder="Double-click to add explanation or solution notes..."
+          placeholder="Add explanation or solution notes (optional)..."
           onSave={(newExp) => onChange({ ...item, explanation: newExp || undefined })}
         />
       </div>
@@ -1214,7 +1205,7 @@ export function ImportMcqView() {
                 <div>
                   <p className="font-bold">JSON Parsed & Valid!</p>
                   <p className="text-xs">
-                    {parsedItems.length} MCQ question(s) parsed. Double-click any key below on the cards to make inline edits.
+                    {parsedItems.length} MCQ question(s) parsed successfully.
                   </p>
                 </div>
               </div>
@@ -1240,9 +1231,6 @@ export function ImportMcqView() {
                     <span className="material-symbols-outlined text-primary">view_carousel</span>
                     Card Preview ({parsedItems.length} MCQ Questions)
                   </h4>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Double-click any question, option text, answer, explanation, or reference to edit in-place.
-                  </p>
                 </div>
 
                 <div className="flex items-center gap-2">

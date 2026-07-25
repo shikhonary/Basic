@@ -173,6 +173,7 @@ export function TakeExamView({ examId }: TakeExamViewProps) {
   // Refs for scrolling to questions
   const questionRefs = useRef<Map<string, HTMLDivElement>>(new Map())
   const headerRef = useRef<HTMLDivElement>(null)
+  const hasStartedCreationRef = useRef(false)
 
   // Queries & Mutations
   const { data, isLoading, isError, error } = useQuery(
@@ -231,6 +232,7 @@ export function TakeExamView({ examId }: TakeExamViewProps) {
         { attemptId, submissionType },
         {
           onSuccess: (result) => {
+            window.onbeforeunload = null
             router.push(`/exams/${examId}/result/${result.id}`)
           },
           onError: () => {
@@ -248,6 +250,16 @@ export function TakeExamView({ examId }: TakeExamViewProps) {
     if (!data) return
 
     const { attempt, exam, answerHistory } = data
+
+    // If existing attempt is already submitted, redirect to result page immediately
+    if (
+      attempt &&
+      (attempt.status === "Submitted" || attempt.status === "Auto-Submitted")
+    ) {
+      window.onbeforeunload = null
+      router.push(`/exams/${examId}/result/${attempt.id}`)
+      return
+    }
 
     // Restore existing answer history if resuming
     if (answerHistory && answerHistory.length > 0) {
@@ -269,9 +281,6 @@ export function TakeExamView({ examId }: TakeExamViewProps) {
     if (attempt) {
       setCorrectCount(attempt.correctAnswers ?? 0)
       setWrongCount(attempt.wrongAnswers ?? 0)
-    }
-
-    if (attempt) {
       setAttemptId(attempt.id)
       setTabSwitches(attempt.tabSwitches ?? 0)
 
@@ -292,7 +301,8 @@ export function TakeExamView({ examId }: TakeExamViewProps) {
       } else {
         setTimeLeft(examTotalSeconds)
       }
-    } else {
+    } else if (!hasStartedCreationRef.current) {
+      hasStartedCreationRef.current = true
       // Auto-start attempt if not created yet
       createAttemptMutation.mutate(
         { examId },
@@ -304,7 +314,7 @@ export function TakeExamView({ examId }: TakeExamViewProps) {
         },
       )
     }
-  }, [data, handleFinalSubmit])
+  }, [data, examId])
 
   // Live Timer Effect
   useEffect(() => {
@@ -352,11 +362,17 @@ export function TakeExamView({ examId }: TakeExamViewProps) {
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange)
     }
-  }, [attemptId, handleFinalSubmit])
+  }, [attemptId, handleFinalSubmit, trackTabSwitchMutation])
 
-  // beforeunload Warning
+  // beforeunload Warning (disabled during final submission/mutation)
   useEffect(() => {
-    if (!attemptId) return
+    if (
+      !attemptId ||
+      isAutoSubmitting ||
+      submitExamMutation.isPending ||
+      submitExamMutation.isSuccess
+    )
+      return
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault()
@@ -367,7 +383,12 @@ export function TakeExamView({ examId }: TakeExamViewProps) {
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload)
     }
-  }, [attemptId])
+  }, [
+    attemptId,
+    isAutoSubmitting,
+    submitExamMutation.isPending,
+    submitExamMutation.isSuccess,
+  ])
 
   // Activity Heartbeat every 60 seconds
   useEffect(() => {

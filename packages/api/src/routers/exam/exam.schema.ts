@@ -23,6 +23,7 @@ export const listExamsSchema = paginationSchema.extend({
   status: z.string().optional(),
   type: z.string().optional(),
   academicClassId: z.string().optional(),
+  examGroupId: z.string().optional(),
   query: z.string().optional(),
   sort: examSortEnum.optional(),
   page: z.number().int().min(1).optional(),
@@ -61,6 +62,7 @@ export const createExamSchema = z.object({
   status: z.string().default("Pending"),
   academicClassId: z.string().min(1, "Academic class is required"),
   subjectIds: z.array(z.string().min(1)).min(1, "At least one subject is required"),
+  examGroupId: z.string().optional(),
 })
 
 export type CreateExamInput = z.infer<typeof createExamSchema>
@@ -80,6 +82,7 @@ export const updateExamSchema = z.object({
   type: z.string().min(1).optional(),
   status: z.string().optional(),
   academicClassId: z.string().min(1).optional(),
+  examGroupId: z.string().optional().nullable(),
 })
 
 export type UpdateExamInput = z.infer<typeof updateExamSchema>
@@ -115,6 +118,14 @@ export const removeExamSubjectSchema = z.object({
 
 export type RemoveExamSubjectInput = z.infer<typeof removeExamSubjectSchema>
 
+export const updateExamSubjectMcqsSchema = z.object({
+  examId: z.string().min(1),
+  examSubjectId: z.string().min(1),
+  mcqIds: z.array(z.string()),
+})
+
+export type UpdateExamSubjectMcqsInput = z.infer<typeof updateExamSubjectMcqsSchema>
+
 // ---------------------------------------------------------------------------
 // Select Shape
 // ---------------------------------------------------------------------------
@@ -149,6 +160,7 @@ export const safeExamSelect = {
     select: {
       id: true,
       subjectId: true,
+      mcqIds: true,
       subject: {
         select: {
           id: true,
@@ -160,9 +172,29 @@ export const safeExamSelect = {
       },
     },
   },
+  examGroupItems: {
+    select: {
+      id: true,
+      examGroupId: true,
+      position: true,
+      weightage: true,
+      isRequired: true,
+      examGroup: {
+        select: {
+          id: true,
+          title: true,
+          code: true,
+          type: true,
+          calculationType: true,
+          isPublished: true,
+        },
+      },
+    },
+  },
   _count: {
     select: {
       examAttempts: true,
+      examGroupItems: true,
     },
   },
 } as const

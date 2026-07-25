@@ -88,8 +88,14 @@ export function OnboardingForm() {
   // Mutation
   const completeMutation = useMutation(
     trpc.student.completeOnboarding.mutationOptions({
-      onSuccess: async () => {
-        await queryClient.invalidateQueries({ queryKey: trpc.user.me.queryKey() })
+      onSuccess: async (data) => {
+        if (data) {
+          queryClient.setQueryData(trpc.student.getProfile.queryKey(), data)
+        }
+        await Promise.all([
+          queryClient.invalidateQueries(trpc.user.pathFilter()),
+          queryClient.invalidateQueries(trpc.student.pathFilter()),
+        ])
         toast.success("প্রোফাইল অনবোর্ডিং সফল হয়েছে! ড্যাশবোর্ডে রিডাইরেক্ট করা হচ্ছে...")
         setErrorMsg(null)
         setTimeout(() => {
@@ -267,7 +273,7 @@ export function OnboardingForm() {
                 {/* Mother's Phone */}
                 <div className="space-y-2">
                   <Label className="block font-label-sm text-xs font-semibold tracking-wider text-on-surface-variant">
-                    মোবাইল নম্বর <span className="text-error">*</span>
+                    গার্ডিয়ান মোবাইল নম্বর <span className="text-error">*</span>
                   </Label>
                   <div className="group relative">
                     <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors z-10">
@@ -278,7 +284,7 @@ export function OnboardingForm() {
                       disabled={isPending}
                       placeholder="1XXXXXXXXX"
                       {...register("mPhone")}
-                      className="w-full rounded-lg border border-outline-variant py-3 pl-24 pr-4 font-body-md text-on-surface transition-all bg-white focus:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:outline-hidden h-auto"
+                      className="w-full rounded-lg border border-outline-variant py-3 pl-10 pr-4 font-body-md text-on-surface transition-all bg-white focus:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:outline-hidden h-auto"
                     />
                   </div>
                   {errors.mPhone && (

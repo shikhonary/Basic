@@ -17,6 +17,9 @@ import {
   Settings,
   LogOut,
   HelpCircle,
+  ChevronLeft,
+  ChevronRight,
+  Library,
 } from "lucide-react"
 
 const navItems = [
@@ -28,11 +31,18 @@ const navItems = [
   { href: "/users", label: "Users", icon: Users },
   { href: "/schedule", label: "Batch Schedule", icon: Calendar },
   { href: "/exams", label: "Exams", icon: ClipboardList },
+  { href: "/exam-groups", label: "Exam Groups", icon: Layers },
+  { href: "/question-bank", label: "Question Bank", icon: Library },
   { href: "/reports", label: "Progress Reports", icon: BarChart3 },
   { href: "/fees", label: "Fees", icon: CreditCard },
 ]
 
-export function SideNav() {
+interface SideNavProps {
+  isCollapsed?: boolean
+  onToggle?: () => void
+}
+
+export function SideNav({ isCollapsed = false, onToggle }: SideNavProps) {
   const pathname = usePathname()
   const router = useRouter()
 
@@ -42,33 +52,57 @@ export function SideNav() {
   }
 
   return (
-    <aside className="fixed left-0 top-0 z-50 hidden h-screen w-64 flex-col border-r border-outline-variant/30 bg-surface-container-low md:flex">
+    <aside
+      className={`fixed left-0 top-0 z-50 hidden h-screen flex-col border-r border-outline-variant/30 bg-surface-container-low transition-all duration-300 md:flex ${
+        isCollapsed ? "w-20" : "w-64"
+      }`}
+    >
       {/* Header Section */}
-      <div className="flex flex-col gap-1 p-6">
+      <div
+        className={`flex items-center p-4 border-b border-outline-variant/20 ${
+          isCollapsed ? "flex-col justify-center gap-2" : "justify-between"
+        }`}
+      >
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded text-on-primary-container">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded text-on-primary-container">
             <Image
               src="/logo.jpg"
               alt="Logo"
               width={40}
               height={40}
-              className="rounded-lg"
+              className="rounded-lg object-cover"
             />
           </div>
-          <div className="flex flex-col">
-            <h2 className="font-extrabold text-headline-md font-headline-md text-on-surface leading-none tracking-tight">
-              Basic
-            </h2>
-            <span className="mt-1 font-label-sm text-label-sm text-outline uppercase tracking-wider">
-              Education Care
-            </span>
-          </div>
+          {!isCollapsed && (
+            <div className="flex flex-col overflow-hidden whitespace-nowrap">
+              <h2 className="font-extrabold text-headline-md font-headline-md text-on-surface leading-none tracking-tight">
+                Basic
+              </h2>
+              <span className="mt-1 font-label-sm text-[10px] text-outline uppercase tracking-wider">
+                Education Care
+              </span>
+            </div>
+          )}
         </div>
+
+        {onToggle && (
+          <button
+            onClick={onToggle}
+            className="p-1.5 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container-high transition-colors cursor-pointer shrink-0"
+            title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+          >
+            {isCollapsed ? (
+              <ChevronRight className="h-4 w-4" />
+            ) : (
+              <ChevronLeft className="h-4 w-4" />
+            )}
+          </button>
+        )}
       </div>
 
       {/* Navigation Tabs */}
-      <nav className="mt-4 flex-1">
-        <div className="flex flex-col">
+      <nav className="mt-4 flex-1 overflow-y-auto overflow-x-hidden">
+        <div className="flex flex-col gap-1 px-2">
           {navItems.map((item) => {
             const isActive = pathname === item.href
             const Icon = item.icon
@@ -76,15 +110,21 @@ export function SideNav() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`group flex items-center gap-4 px-6 py-3 transition-all duration-200 ${isActive
-                  ? "sidebar-item-active font-bold text-primary border-r-4 border-primary bg-surface-container-high"
-                  : "text-on-surface-variant hover:bg-surface-container-high"
-                  }`}
+                title={isCollapsed ? item.label : undefined}
+                className={`group flex items-center gap-4 rounded-xl transition-all duration-200 ${
+                  isCollapsed ? "justify-center p-3" : "px-4 py-3"
+                } ${
+                  isActive
+                    ? "sidebar-item-active font-bold text-primary bg-primary/10 border-l-4 border-primary"
+                    : "text-on-surface-variant hover:bg-surface-container-high"
+                }`}
               >
-                <Icon className="h-5 w-5" />
-                <span className="font-label-sm text-label-sm uppercase tracking-wider">
-                  {item.label}
-                </span>
+                <Icon className="h-5 w-5 shrink-0" />
+                {!isCollapsed && (
+                  <span className="font-label-sm text-xs uppercase tracking-wider whitespace-nowrap overflow-hidden text-ellipsis">
+                    {item.label}
+                  </span>
+                )}
               </Link>
             )
           })}
@@ -92,24 +132,34 @@ export function SideNav() {
       </nav>
 
       {/* Footer Section */}
-      <div className="border-t border-outline-variant/30 py-4">
+      <div className="border-t border-outline-variant/30 p-2 space-y-1">
         <Link
           href="/settings"
-          className="group flex items-center gap-4 px-6 py-3 text-on-surface-variant transition-all duration-200 hover:bg-surface-container-high"
+          title={isCollapsed ? "Settings" : undefined}
+          className={`group flex items-center gap-4 rounded-xl text-on-surface-variant transition-all duration-200 hover:bg-surface-container-high ${
+            isCollapsed ? "justify-center p-3" : "px-4 py-3"
+          }`}
         >
-          <Settings className="h-5 w-5" />
-          <span className="font-label-sm text-label-sm uppercase tracking-wider">
-            Settings
-          </span>
+          <Settings className="h-5 w-5 shrink-0" />
+          {!isCollapsed && (
+            <span className="font-label-sm text-xs uppercase tracking-wider whitespace-nowrap">
+              Settings
+            </span>
+          )}
         </Link>
         <button
           onClick={handleSignOut}
-          className="group flex w-full items-center gap-4 px-6 py-3 text-error transition-all duration-200 hover:bg-error-container/20 cursor-pointer"
+          title={isCollapsed ? "Logout" : undefined}
+          className={`group flex w-full items-center gap-4 rounded-xl text-error transition-all duration-200 hover:bg-error-container/20 cursor-pointer ${
+            isCollapsed ? "justify-center p-3" : "px-4 py-3"
+          }`}
         >
-          <LogOut className="h-5 w-5" />
-          <span className="font-label-sm text-label-sm uppercase tracking-wider">
-            Logout
-          </span>
+          <LogOut className="h-5 w-5 shrink-0" />
+          {!isCollapsed && (
+            <span className="font-label-sm text-xs uppercase tracking-wider whitespace-nowrap">
+              Logout
+            </span>
+          )}
         </button>
       </div>
     </aside>

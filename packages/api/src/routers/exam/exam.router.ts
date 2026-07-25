@@ -19,6 +19,7 @@ import {
   removeExamSubjectSchema,
   toggleExamStatusSchema,
   updateExamSchema,
+  updateExamSubjectMcqsSchema,
 } from "./exam.schema"
 import {
   addExamSubjects,
@@ -31,6 +32,7 @@ import {
   removeExamSubject,
   toggleExamStatus,
   updateExam,
+  updateExamSubjectMcqs,
 } from "./exam.service"
 
 export const examRouter = createTRPCRouter({
@@ -103,4 +105,11 @@ export const examRouter = createTRPCRouter({
   removeSubject: protectedProcedure
     .input(removeExamSubjectSchema)
     .mutation(({ input }) => removeExamSubject(db, input)),
+
+  /**
+   * Update assigned MCQ IDs for an exam subject.
+   */
+  updateSubjectMcqs: protectedProcedure
+    .input(updateExamSubjectMcqsSchema)
+    .mutation(({ input }) => updateExamSubjectMcqs(db, input)),
 })

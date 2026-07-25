@@ -20,6 +20,7 @@ import {
   CalendarX,
   Radio,
   Flame,
+  Trophy,
 } from "lucide-react"
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
@@ -470,18 +471,30 @@ export function StudentExamCard({ exam }: StudentExamCardProps) {
         {/* ── Action Footer ── */}
         <div className="border-t border-outline-variant/30 pt-3">
           {isCompleted && studentAttempt ? (
-            <Button
-              asChild
-              size="sm"
-              variant="outline"
-              className="w-full gap-2 rounded-xl border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-400 dark:hover:bg-emerald-950/30"
-            >
-              <Link href={`/exams/${exam.id}/result/${studentAttempt.id}`}>
-                <CheckCircle2 className="h-4 w-4" />
-                ফলাফল দেখুন
-                <ChevronRight className="ml-auto h-4 w-4 opacity-60" />
-              </Link>
-            </Button>
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                asChild
+                size="sm"
+                variant="outline"
+                className="w-full gap-1.5 rounded-xl border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-400 dark:hover:bg-emerald-950/30 text-xs font-semibold px-2"
+              >
+                <Link href={`/exams/${exam.id}/result/${studentAttempt.id}`}>
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">ফলাফল দেখুন</span>
+                </Link>
+              </Button>
+              <Button
+                asChild
+                size="sm"
+                variant="outline"
+                className="w-full gap-1.5 rounded-xl border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-800 dark:text-amber-400 dark:hover:bg-amber-950/30 text-xs font-semibold px-2"
+              >
+                <Link href={`/exams/${exam.id}/leaderboard`}>
+                  <Trophy className="h-3.5 w-3.5 shrink-0 text-amber-500" />
+                  <span className="truncate">লিডারবোর্ড</span>
+                </Link>
+              </Button>
+            </div>
           ) : !isPublished ? (
             <Button
               disabled

@@ -97,4 +97,11 @@ export type {
   CalculationType,
   ExamGroupType,
 } from "./routers/exam-group/exam-group.schema"
+export type {
+  ListQuestionBankInput,
+  QuestionBankStatsInput,
+  GetQuestionBankMcqInput,
+  QuestionBankByChapterInput,
+  QuestionBankSortOption,
+} from "./routers/question-bank/question-bank.schema"
 

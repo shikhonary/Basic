@@ -7,12 +7,14 @@ import {
   BookOpen,
   ClipboardList,
   User,
+  Trophy,
 } from "lucide-react"
 
 const mobileNavItems = [
   { href: "/", label: "হোম", icon: LayoutDashboard },
   { href: "/question-bank", label: "প্রশ্নব্যাংক", icon: BookOpen },
   { href: "/exams", label: "পরীক্ষা", icon: ClipboardList },
+  { href: "/leaderboard", label: "মেধা", icon: Trophy },
   { href: "/profile", label: "প্রোফাইল", icon: User },
 ]
 

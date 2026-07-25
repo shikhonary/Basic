@@ -1,7 +1,7 @@
 /**
  * Exam domain — business logic service.
  *
- * All database queries live here, decoupled from tRPC plumbing.
+ * All database queries and core calculations live here.
  */
 import type { PrismaClient } from "@workspace/db/main"
 import { TRPCError } from "@trpc/server"
@@ -17,6 +17,7 @@ import type {
   RemoveExamSubjectInput,
   ToggleExamStatusInput,
   UpdateExamInput,
+  UpdateExamSubjectMcqsInput,
 } from "./exam.schema"
 import { safeExamSelect } from "./exam.schema"
 
@@ -29,6 +30,9 @@ export async function listExams(db: PrismaClient, input: ListExamsInput) {
     ...(input.status ? { status: input.status } : {}),
     ...(input.type ? { type: input.type } : {}),
     ...(input.academicClassId ? { academicClassId: input.academicClassId } : {}),
+    ...(input.examGroupId
+      ? { examGroupItems: { some: { examGroupId: input.examGroupId } } }
+      : {}),
     ...(input.query
       ? {
           OR: [
@@ -97,9 +101,9 @@ export async function getExamById(db: PrismaClient, input: GetExamInput) {
 
 export async function getExamStats(db: PrismaClient, input?: ExamStatsInput) {
   const where = {
-    ...(input?.status ? { status: input.status } : {}),
-    ...(input?.type ? { type: input.type } : {}),
-    ...(input?.academicClassId ? { academicClassId: input.academicClassId } : {}),
+    ...(input?.status ? { status: input?.status } : {}),
+    ...(input?.type ? { type: input?.type } : {}),
+    ...(input?.academicClassId ? { academicClassId: input?.academicClassId } : {}),
   }
 
   const [totalCount, statusGroup, typeGroup] = await Promise.all([
@@ -139,7 +143,7 @@ export async function getExamStats(db: PrismaClient, input?: ExamStatsInput) {
 
 export async function createExam(db: PrismaClient, input: CreateExamInput) {
   try {
-    const { subjectIds, academicClassId, ...examData } = input
+    const { subjectIds, academicClassId, examGroupId, ...examData } = input
 
     // Validate date range
     if (examData.endDate <= examData.startDate) {
@@ -165,7 +169,18 @@ export async function createExam(db: PrismaClient, input: CreateExamInput) {
       throw badRequest("One or more subject IDs are invalid")
     }
 
-    // Create exam + subject links in a transaction
+    // If examGroupId is provided, validate it exists
+    if (examGroupId) {
+      const examGroup = await db.examGroup.findUnique({
+        where: { id: examGroupId },
+        select: { id: true },
+      })
+      if (!examGroup) {
+        throw badRequest("Exam Group ID is invalid")
+      }
+    }
+
+    // Create exam + subject links + examGroup link in a transaction
     const exam = await db.$transaction(async (tx) => {
       const created = await tx.exam.create({
         data: {
@@ -181,6 +196,18 @@ export async function createExam(db: PrismaClient, input: CreateExamInput) {
           subjectId,
         })),
       })
+
+      if (examGroupId) {
+        await tx.examGroupItem.create({
+          data: {
+            examGroupId,
+            examId: created.id,
+            position: 0,
+            weightage: 100.0,
+            isRequired: true,
+          },
+        })
+      }
 
       return tx.exam.findUniqueOrThrow({
         where: { id: created.id },
@@ -200,7 +227,7 @@ export async function createExam(db: PrismaClient, input: CreateExamInput) {
 }
 
 export async function updateExam(db: PrismaClient, input: UpdateExamInput) {
-  const { id, academicClassId, ...data } = input
+  const { id, academicClassId, examGroupId, ...data } = input
 
   const existing = await db.exam.findUnique({
     where: { id },
@@ -218,6 +245,40 @@ export async function updateExam(db: PrismaClient, input: UpdateExamInput) {
 
   if (data.startDate && data.endDate && data.endDate <= data.startDate) {
     throw badRequest("End date must be after start date")
+  }
+
+  if (examGroupId !== undefined) {
+    // If examGroupId is provided, link or update
+    if (examGroupId === null || examGroupId === "none" || examGroupId === "") {
+      // Remove all group items for this exam
+      await db.examGroupItem.deleteMany({
+        where: { examId: id },
+      })
+    } else {
+      const groupExists = await db.examGroup.findUnique({
+        where: { id: examGroupId },
+        select: { id: true },
+      })
+      if (!groupExists) throw badRequest("Exam Group ID is invalid")
+
+      // Upsert the exam group item link
+      await db.examGroupItem.upsert({
+        where: {
+          examGroupId_examId: {
+            examGroupId,
+            examId: id,
+          },
+        },
+        create: {
+          examGroupId,
+          examId: id,
+          position: 0,
+          weightage: 100.0,
+          isRequired: true,
+        },
+        update: {},
+      })
+    }
   }
 
   return db.exam.update({
@@ -248,16 +309,13 @@ export async function bulkDeleteExams(
   db: PrismaClient,
   input: BulkDeleteExamsInput,
 ) {
-  const result = await db.exam.deleteMany({
+  await db.exam.deleteMany({
     where: {
       id: { in: input.ids },
     },
   })
 
-  return {
-    success: true,
-    deletedCount: result.count,
-  }
+  return { success: true, count: input.ids.length }
 }
 
 export async function toggleExamStatus(
@@ -281,44 +339,32 @@ export async function addExamSubjects(
   db: PrismaClient,
   input: AddExamSubjectsInput,
 ) {
+  const { examId, subjectIds } = input
+
   const exam = await db.exam.findUnique({
-    where: { id: input.examId },
+    where: { id: examId },
     select: { id: true },
   })
   if (!exam) throw notFound("Exam")
 
-  // Validate subjects exist
   const subjects = await db.subject.findMany({
-    where: { id: { in: input.subjectIds } },
+    where: { id: { in: subjectIds } },
     select: { id: true },
   })
-
-  if (subjects.length !== input.subjectIds.length) {
+  if (subjects.length !== subjectIds.length) {
     throw badRequest("One or more subject IDs are invalid")
   }
 
-  // Check for existing links to avoid unique constraint errors
-  const existing = await db.examSubject.findMany({
-    where: {
-      examId: input.examId,
-      subjectId: { in: input.subjectIds },
-    },
-    select: { subjectId: true },
+  await db.examSubject.createMany({
+    data: subjectIds.map((subjectId) => ({
+      examId,
+      subjectId,
+    })),
+    skipDuplicates: true,
   })
-  const existingIds = new Set(existing.map((e) => e.subjectId))
-  const newSubjectIds = input.subjectIds.filter((id) => !existingIds.has(id))
-
-  if (newSubjectIds.length > 0) {
-    await db.examSubject.createMany({
-      data: newSubjectIds.map((subjectId) => ({
-        examId: input.examId,
-        subjectId,
-      })),
-    })
-  }
 
   return db.exam.findUniqueOrThrow({
-    where: { id: input.examId },
+    where: { id: examId },
     select: safeExamSelect,
   })
 }
@@ -327,23 +373,39 @@ export async function removeExamSubject(
   db: PrismaClient,
   input: RemoveExamSubjectInput,
 ) {
-  const link = await db.examSubject.findUnique({
-    where: {
-      examId_subjectId: {
-        examId: input.examId,
-        subjectId: input.subjectId,
-      },
-    },
-    select: { id: true },
-  })
-  if (!link) throw notFound("ExamSubject link")
+  const { examId, subjectId } = input
 
-  await db.examSubject.delete({
-    where: { id: link.id },
+  await db.examSubject.deleteMany({
+    where: {
+      examId,
+      subjectId,
+    },
   })
 
   return db.exam.findUniqueOrThrow({
-    where: { id: input.examId },
+    where: { id: examId },
+    select: safeExamSelect,
+  })
+}
+
+export async function updateExamSubjectMcqs(
+  db: PrismaClient,
+  input: UpdateExamSubjectMcqsInput,
+) {
+  const { examId, examSubjectId, mcqIds } = input
+
+  const examSubject = await db.examSubject.findFirst({
+    where: { id: examSubjectId, examId },
+  })
+  if (!examSubject) throw notFound("Exam Subject")
+
+  await db.examSubject.update({
+    where: { id: examSubjectId },
+    data: { mcqIds },
+  })
+
+  return db.exam.findUniqueOrThrow({
+    where: { id: examId },
     select: safeExamSelect,
   })
 }

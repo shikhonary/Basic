@@ -40,6 +40,12 @@ export const listMyAttemptsSchema = paginationSchema.extend({
 
 export type ListMyAttemptsInput = z.infer<typeof listMyAttemptsSchema>
 
+export const getExamLeaderboardSchema = z.object({
+  examId: z.string().min(1),
+})
+
+export type GetExamLeaderboardInput = z.infer<typeof getExamLeaderboardSchema>
+
 // ---------------------------------------------------------------------------
 // Mutations
 // ---------------------------------------------------------------------------

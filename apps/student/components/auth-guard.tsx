@@ -32,6 +32,9 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     staleTime: 5 * 60 * 1000,
   })
 
+  const isProfileFetching =
+    studentProfileQuery.isLoading || studentProfileQuery.isFetching
+
   useEffect(() => {
     // 1. Unauthenticated -> redirect to sign-in
     if (!isAuthRoute && !isUserLoading && !session) {
@@ -43,7 +46,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     if (
       session &&
       !isUserLoading &&
-      !studentProfileQuery.isLoading &&
+      !isProfileFetching &&
       isUserRole &&
       !studentProfileQuery.data &&
       !isOnboardingRoute
@@ -55,7 +58,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     isOnboardingRoute,
     session,
     isUserLoading,
-    studentProfileQuery.isLoading,
+    isProfileFetching,
     studentProfileQuery.data,
     isUserRole,
     router,
@@ -72,7 +75,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   }
 
   // Loading state for session or student profile check
-  if (isUserLoading || (!!session && isUserRole && studentProfileQuery.isLoading)) {
+  if (isUserLoading || (!!session && isUserRole && isProfileFetching && !studentProfileQuery.data)) {
     return (
       <div className="flex min-h-svh items-center justify-center bg-surface">
         <div className="flex flex-col items-center gap-4">

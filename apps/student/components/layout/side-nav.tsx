@@ -11,12 +11,14 @@ import {
   User,
   Settings,
   LogOut,
+  Trophy,
 } from "lucide-react"
 
 const navItems = [
   { href: "/", label: "ড্যাশবোর্ড", mobileLabel: "হোম", icon: LayoutDashboard },
   { href: "/question-bank", label: "প্রশ্নব্যাংক", mobileLabel: "প্রশ্নব্যাংক", icon: BookOpen },
   { href: "/exams", label: "পরীক্ষা", mobileLabel: "পরীক্ষা", icon: ClipboardList },
+  { href: "/leaderboard", label: "মেধা তালিকা", mobileLabel: "মেধা", icon: Trophy },
   { href: "/profile", label: "প্রোফাইল", mobileLabel: "প্রোফাইল", icon: User },
 ]
 
@@ -58,17 +60,22 @@ export function SideNav() {
       <nav className="mt-4 flex-1">
         <div className="flex flex-col">
           {navItems.map((item) => {
-            const isActive = pathname === item.href
+            const isActive =
+              item.href === "/"
+                ? pathname === "/"
+                : pathname.startsWith(item.href)
+
             const Icon = item.icon
 
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`group flex items-center gap-3.5 px-6 py-3.5 transition-all duration-200 ${isActive
+                className={`group flex items-center gap-3.5 px-6 py-3.5 transition-all duration-200 ${
+                  isActive
                     ? "sidebar-item-active font-bold text-primary border-r-4 border-primary bg-surface-container-high"
                     : "text-on-surface-variant hover:bg-surface-container-high font-medium"
-                  }`}
+                }`}
               >
                 <Icon className="h-5 w-5 shrink-0" />
                 <span className="text-base font-semibold">

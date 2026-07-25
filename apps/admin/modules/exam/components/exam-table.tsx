@@ -67,6 +67,13 @@ export interface ExamItem {
     level: string
     position: number
   }
+  examGroupItems?: Array<{
+    id: string
+    examGroup: {
+      id: string
+      title: string
+    }
+  }>
   createdAt: string | Date
   updatedAt: string | Date
   examSubjects?: ExamSubjectItem[]
@@ -211,6 +218,7 @@ export function ExamTable({
             <TableBody className="divide-y divide-outline-variant/30">
               {items.map((item) => {
                 const subjects = item.examSubjects ?? []
+                const firstGroup = item.examGroupItems?.[0]?.examGroup
                 const startDateStr = new Date(item.startDate).toLocaleDateString("en-US", {
                   month: "short",
                   day: "numeric",
@@ -240,10 +248,20 @@ export function ExamTable({
                         >
                           {item.title}
                         </Link>
-                        <div className="flex items-center gap-2 mt-1">
+                        <div className="flex flex-wrap items-center gap-2 mt-1">
                           <span className="rounded-md bg-secondary-container/20 px-2 py-0.5 font-label-sm text-[11px] font-semibold text-secondary uppercase tracking-wider">
                             {item.type}
                           </span>
+                          {firstGroup && (
+                            <Link
+                              href={`/exam-groups/${firstGroup.id}`}
+                              className="inline-flex items-center gap-1 rounded-md bg-indigo-50 px-2 py-0.5 font-label-sm text-[11px] font-semibold text-indigo-700 hover:bg-indigo-100 transition-colors border border-indigo-200"
+                              title={`Part of Exam Group: ${firstGroup.title}`}
+                            >
+                              <span className="material-symbols-outlined text-xs">layers</span>
+                              <span>{firstGroup.title}</span>
+                            </Link>
+                          )}
                           {item._count?.examAttempts !== undefined && (
                             <span className="text-[12px] text-outline flex items-center gap-1">
                               • {item._count.examAttempts} attempt{item._count.examAttempts === 1 ? "" : "s"}

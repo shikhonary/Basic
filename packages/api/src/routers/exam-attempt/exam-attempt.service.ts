@@ -12,6 +12,7 @@ import type {
   CreateAttemptInput,
   GetAttemptResultInput,
   GetExamForAttemptInput,
+  GetExamLeaderboardInput,
   ListAvailableExamsInput,
   ListMyAttemptsInput,
   SubmitAnswerInput,
@@ -52,6 +53,78 @@ function shuffleArray<T>(arr: T[]): T[] {
     ;[shuffled[i], shuffled[j]] = [shuffled[j]!, shuffled[i]!]
   }
   return shuffled
+}
+
+/**
+ * Group MCQs by context so questions belonging to the same context stay together.
+ */
+function groupMcqsByContext<
+  T extends {
+    id: string
+    type?: string | null
+    context?: string | null
+    contextUrl?: string | null
+  },
+>(mcqs: T[]): T[][] {
+  const groups: T[][] = []
+  const contextMap = new Map<string, T[]>()
+  let currentAnonymousGroup: T[] | null = null
+
+  for (const mcq of mcqs) {
+    const contextText = mcq.context?.trim()
+    const contextUrl = mcq.contextUrl?.trim()
+    const isContextualType = mcq.type === "CONTEXTUAL"
+
+    if (contextText) {
+      currentAnonymousGroup = null
+      const key = `text:${contextText}`
+      let group = contextMap.get(key)
+      if (!group) {
+        group = []
+        contextMap.set(key, group)
+        groups.push(group)
+      }
+      group.push(mcq)
+    } else if (contextUrl) {
+      currentAnonymousGroup = null
+      const key = `url:${contextUrl}`
+      let group = contextMap.get(key)
+      if (!group) {
+        group = []
+        contextMap.set(key, group)
+        groups.push(group)
+      }
+      group.push(mcq)
+    } else if (isContextualType) {
+      if (currentAnonymousGroup) {
+        currentAnonymousGroup.push(mcq)
+      } else {
+        currentAnonymousGroup = [mcq]
+        groups.push(currentAnonymousGroup)
+      }
+    } else {
+      currentAnonymousGroup = null
+      groups.push([mcq])
+    }
+  }
+
+  return groups
+}
+
+/**
+ * Shuffle questions while keeping MCQs of the same context one after another.
+ */
+function shuffleMcqsPreservingContext<
+  T extends {
+    id: string
+    type?: string | null
+    context?: string | null
+    contextUrl?: string | null
+  },
+>(mcqs: T[]): T[] {
+  const groups = groupMcqsByContext(mcqs)
+  const shuffledGroups = shuffleArray(groups)
+  return shuffledGroups.flat()
 }
 
 // ---------------------------------------------------------------------------
@@ -234,6 +307,7 @@ export async function getExamForAttempt(
       examSubjects: {
         select: {
           subjectId: true,
+          mcqIds: true,
         },
       },
     },
@@ -261,11 +335,17 @@ export async function getExamForAttempt(
     select: safeAttemptSelect,
   })
 
-  // Fetch MCQs from linked subjects
+  // Fetch MCQs (prioritize explicitly assigned MCQ IDs if any exist)
   const subjectIds = exam.examSubjects.map((es) => es.subjectId)
+  const explicitMcqIds = Array.from(
+    new Set(exam.examSubjects.flatMap((es) => es.mcqIds ?? []))
+  )
+
   let mcqs = await db.mcq.findMany({
     where: {
-      subjectId: { in: subjectIds },
+      ...(explicitMcqIds.length > 0
+        ? { id: { in: explicitMcqIds } }
+        : { subjectId: { in: subjectIds } }),
       isActive: true,
     },
     select: {
@@ -287,16 +367,20 @@ export async function getExamForAttempt(
     },
   })
 
-  // If hasRandom, pick `totalMcq` random questions
+  // If hasRandom, pick `totalMcq` random questions while keeping contextual MCQs together
   if (exam.hasRandom && mcqs.length > exam.totalMcq) {
-    mcqs = shuffleArray(mcqs).slice(0, exam.totalMcq)
+    mcqs = shuffleMcqsPreservingContext(mcqs).slice(0, exam.totalMcq)
+    mcqs = shuffleMcqsPreservingContext(mcqs)
   } else {
     mcqs = mcqs.slice(0, exam.totalMcq)
   }
 
-  // If hasSuffle, randomize order
+  // If hasSuffle, randomize question group order (keeping contextual questions contiguous)
   if (exam.hasSuffle) {
-    mcqs = shuffleArray(mcqs)
+    mcqs = shuffleMcqsPreservingContext(mcqs)
+  } else {
+    // Ensure even without shuffle, contextual questions sharing a context are kept consecutive
+    mcqs = groupMcqsByContext(mcqs).flat()
   }
 
   // If there's an existing attempt, load its answer history
@@ -665,6 +749,16 @@ export async function submitExam(
     throw forbidden("You do not have access to this attempt.")
   }
   if (
+    attempt.status === ATTEMPT_STATUS.SUBMITTED ||
+    attempt.status === ATTEMPT_STATUS.AUTO_SUBMITTED
+  ) {
+    return db.examAttempt.findUnique({
+      where: { id: input.attemptId },
+      select: safeAttemptSelect,
+    }).then((a) => a!)
+  }
+
+  if (
     attempt.status !== ATTEMPT_STATUS.IN_PROGRESS &&
     attempt.status !== ATTEMPT_STATUS.NOT_STARTED
   ) {
@@ -777,4 +871,97 @@ export async function updateActivity(
     data: { lastActivityAt: new Date() },
     select: { id: true, lastActivityAt: true },
   })
+}
+
+/**
+ * Get merit list / leaderboard for a specific exam.
+ */
+export async function getExamLeaderboard(
+  db: PrismaClient,
+  userId: string,
+  input: GetExamLeaderboardInput,
+) {
+  const exam = await db.exam.findUnique({
+    where: { id: input.examId },
+    select: {
+      id: true,
+      title: true,
+      total: true,
+      duration: true,
+      totalMcq: true,
+    },
+  })
+
+  if (!exam) {
+    throw notFound("Exam not found.")
+  }
+
+  // Find all submitted attempts for this exam
+  const attempts = await db.examAttempt.findMany({
+    where: {
+      examId: input.examId,
+      status: { in: [ATTEMPT_STATUS.SUBMITTED, ATTEMPT_STATUS.AUTO_SUBMITTED] },
+    },
+    select: {
+      id: true,
+      score: true,
+      correctAnswers: true,
+      wrongAnswers: true,
+      totalQuestions: true,
+      duration: true,
+      createdAt: true,
+      startTime: true,
+      endTime: true,
+      student: {
+        select: {
+          id: true,
+          userId: true,
+          name: true,
+          nameBn: true,
+          imageUrl: true,
+          roll: true,
+          studentId: true,
+        },
+      },
+    },
+    orderBy: [
+      { score: "desc" },
+      { duration: "asc" },
+      { createdAt: "asc" },
+    ],
+  })
+
+  // Attach rank and identify current student
+  const student = await db.student.findUnique({
+    where: { userId },
+    select: { id: true },
+  })
+
+  const leaderboard = attempts.map((att, index) => ({
+    rank: index + 1,
+    id: att.id,
+    score: att.score ?? 0,
+    correctAnswers: att.correctAnswers ?? 0,
+    wrongAnswers: att.wrongAnswers ?? 0,
+    totalQuestions: att.totalQuestions ?? 0,
+    duration: att.duration,
+    createdAt: att.createdAt,
+    student: {
+      id: att.student.id,
+      name: att.student.name || att.student.nameBn || "শিক্ষার্থী",
+      image: att.student.imageUrl,
+      roll: att.student.roll,
+      studentId: att.student.studentId,
+    },
+    isCurrentUser: student ? att.student.id === student.id : false,
+  }))
+
+  const currentUserEntry = leaderboard.find((entry) => entry.isCurrentUser)
+
+  return {
+    exam,
+    leaderboard,
+    totalParticipants: leaderboard.length,
+    currentUserEntry: currentUserEntry ?? null,
+  }
 }

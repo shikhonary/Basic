@@ -57,7 +57,8 @@ export default function DashboardPage() {
 
       if (isCompleted) {
         completed.push(exam)
-      } else if (isPublished && nowTime >= startMs && nowTime <= endMs) {
+      }
+      if (isPublished && nowTime >= startMs && nowTime <= endMs) {
         live.push(exam)
       } else if (isPublished && nowTime < startMs) {
         upcoming.push(exam)
@@ -237,6 +238,13 @@ export default function DashboardPage() {
           /* No Live Exam currently, but Upcoming Exams exist */
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {upcomingExams.map((exam) => (
+              <StudentExamCard key={exam.id} exam={exam} />
+            ))}
+          </div>
+        ) : items.length > 0 ? (
+          /* Render available/completed exams */
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {items.map((exam) => (
               <StudentExamCard key={exam.id} exam={exam} />
             ))}
           </div>

@@ -29,6 +29,7 @@ import {
 } from "../services/use-exam"
 import { useSubjectsForSelection } from "../../subject/services/use-subject"
 import { useAcademicClassesForSelection } from "../../academic-class/services/use-academic-class"
+import { useExamGroupsList } from "../../exam-group/services/use-exam-group"
 
 const examTypes = [
   { label: "MCQ Exam", value: "MCQ" },
@@ -174,6 +175,11 @@ export function EditExamView({ examId }: EditExamViewProps) {
   const [hasRandom, setHasRandom] = useState(false)
   const [hasNegativeMark, setHasNegativeMark] = useState(false)
   const [negativeMark, setNegativeMark] = useState<number | "">(0.25)
+  const [examGroupId, setExamGroupId] = useState<string>("none")
+
+  // Fetch exam groups for selection
+  const { data: examGroupsData } = useExamGroupsList({ limit: 100 })
+  const availableExamGroups = examGroupsData?.items ?? []
 
   // Fetch subjects assigned to selected academic class
   const { data: allSubjects } = useSubjectsForSelection(
@@ -195,6 +201,7 @@ export function EditExamView({ examId }: EditExamViewProps) {
       setHasRandom(Boolean(exam.hasRandom))
       setHasNegativeMark(Boolean(exam.hasNegativeMark))
       setNegativeMark(exam.negativeMark ?? 0)
+      setExamGroupId((exam as any).examGroupItems?.[0]?.examGroupId || "none")
     }
   }, [exam])
 
@@ -270,6 +277,7 @@ export function EditExamView({ examId }: EditExamViewProps) {
         hasRandom,
         hasNegativeMark,
         negativeMark: hasNegativeMark ? Number(negativeMark) || 0 : 0,
+        examGroupId: examGroupId !== "none" ? examGroupId : null,
       })
 
       toast.success(`Exam "${title.trim()}" updated successfully!`)
@@ -460,6 +468,35 @@ export function EditExamView({ examId }: EditExamViewProps) {
                     {examStatuses.map((s) => (
                       <SelectItem key={s.value} value={s.value}>
                         {s.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Attach to Exam Group Select */}
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="edit-exam-group-select" className="block font-label-sm text-xs font-medium uppercase tracking-wider text-on-surface-variant">
+                Attach to Exam Group (Optional)
+              </Label>
+              <div className="group relative">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors z-10 pointer-events-none">
+                  layers
+                </span>
+                <Select
+                  disabled={isSubmitting}
+                  value={examGroupId}
+                  onValueChange={(val) => setExamGroupId(val ?? "none")}
+                >
+                  <SelectTrigger id="edit-exam-group-select" className="w-full rounded-lg border border-outline-variant bg-white py-3 pl-10 pr-10 font-body-md text-on-surface transition-all cursor-pointer focus:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:outline-hidden h-auto justify-between">
+                    <SelectValue placeholder="None / Standalone Exam..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border border-outline-variant shadow-md rounded-lg">
+                    <SelectItem value="none">None / Standalone Exam</SelectItem>
+                    {availableExamGroups.map((eg) => (
+                      <SelectItem key={eg.id} value={eg.id}>
+                        {eg.title} ({eg.type.replace("_", " ")})
                       </SelectItem>
                     ))}
                   </SelectContent>

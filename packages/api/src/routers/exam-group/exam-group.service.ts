@@ -19,11 +19,14 @@ import type {
   ListExamGroupsInput,
   RemoveExamGroupItemInput,
   ReorderExamGroupItemsInput,
+  StudentExamGroupLeaderboardInput,
+  StudentExamGroupsInput,
   TogglePublishExamGroupInput,
   UpdateExamGroupInput,
   UpdateExamGroupItemInput,
 } from "./exam-group.schema"
 import { safeExamGroupSelect } from "./exam-group.schema"
+
 
 // ---------------------------------------------------------------------------
 // Queries
@@ -394,7 +397,17 @@ export async function calculateExamGroupResults(
   const attempts = await db.examAttempt.findMany({
     where: {
       examId: { in: examIds },
-      status: { in: ["Submitted", "Auto-Submitted", "Completed"] },
+      status: {
+        in: [
+          "Submitted",
+          "Auto-Submitted",
+          "Completed",
+          "SUBMITTED",
+          "AUTO_SUBMITTED",
+          "COMPLETED",
+        ],
+      },
+
       ...(input.studentId ? { studentId: input.studentId } : {}),
     },
     select: {
@@ -686,3 +699,218 @@ export async function getStudentExamGroupResult(db: PrismaClient, input: GetStud
     breakdown,
   }
 }
+
+// ---------------------------------------------------------------------------
+// Student-Facing Queries (studentProcedure)
+// ---------------------------------------------------------------------------
+
+/**
+ * List published exam groups matching the logged-in student's academic class,
+ * with the student's own merit position and percentage (if calculated or on-demand).
+ */
+export async function listStudentExamGroups(
+  db: PrismaClient,
+  userId: string,
+  input: StudentExamGroupsInput,
+) {
+  // Resolve the current student
+  const student = await db.student.findFirst({
+    where: { userId },
+    select: { id: true, academicClassId: true },
+  })
+
+  if (!student) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "Student profile not found for this user",
+    })
+  }
+
+  const where = {
+    isPublished: true,
+    academicClassId: student.academicClassId,
+  }
+
+  const page = input.page ?? 1
+  const limit = input.limit ?? 20
+  const skip = (page - 1) * limit
+
+  const [groups, totalItems] = await Promise.all([
+    db.examGroup.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: [{ createdAt: "desc" }],
+      select: {
+        ...safeExamGroupSelect,
+        // Also eagerly load this student's result if it exists
+        groupResults: {
+          where: { studentId: student.id },
+          select: {
+            meritPosition: true,
+            percentage: true,
+            totalObtainedMarks: true,
+            totalMaxMarks: true,
+            status: true,
+          },
+        },
+      },
+    }),
+    db.examGroup.count({ where }),
+  ])
+
+  // Automatically calculate results for any group where results are missing or need update
+  await Promise.allSettled(
+    groups.map((g) =>
+      calculateExamGroupResults(db, { examGroupId: g.id }).catch(() => null),
+    ),
+  )
+
+  // Re-fetch updated student results for accuracy
+  const groupIds = groups.map((g) => g.id)
+  const freshResults = await db.examGroupResult.findMany({
+    where: {
+      examGroupId: { in: groupIds },
+      studentId: student.id,
+    },
+    select: {
+      examGroupId: true,
+      meritPosition: true,
+      percentage: true,
+      totalObtainedMarks: true,
+      totalMaxMarks: true,
+      status: true,
+    },
+  })
+
+  const freshResultMap = new Map(freshResults.map((r) => [r.examGroupId, r]))
+
+  // Flatten: attach student's own result directly to each group card
+  const items = groups.map((g) => {
+    const myResult = freshResultMap.get(g.id) ?? g.groupResults[0] ?? null
+    const { groupResults, ...rest } = g
+    return {
+      ...rest,
+      myResult,
+    }
+  })
+
+  return {
+    items,
+    totalItems,
+    totalPages: Math.ceil(totalItems / limit) || 1,
+    page,
+    limit,
+  }
+}
+
+/**
+ * Get a paginated leaderboard for a specific exam group, annotating
+ * each row with whether it belongs to the current (logged-in) student.
+ */
+export async function getStudentGroupLeaderboard(
+  db: PrismaClient,
+  userId: string,
+  input: StudentExamGroupLeaderboardInput,
+) {
+  // Resolve group
+  const group = await db.examGroup.findUnique({
+    where: { id: input.examGroupId, isPublished: true },
+    select: safeExamGroupSelect,
+  })
+
+  if (!group) throw notFound("Exam Group")
+
+  // Dynamically calculate and refresh group results on demand
+  try {
+    await calculateExamGroupResults(db, { examGroupId: input.examGroupId })
+  } catch (err) {
+    console.error("Auto calculate exam group results error:", err)
+  }
+
+  // Resolve current student
+  const student = await db.student.findFirst({
+    where: { userId },
+    select: { id: true },
+  })
+
+  // Build sort
+  let orderBy: any = [{ meritPosition: "asc" }]
+  if (input.sort === "score_desc") orderBy = [{ totalObtainedMarks: "desc" }]
+  if (input.sort === "name_asc") orderBy = [{ student: { name: "asc" } }]
+
+  const where: any = { examGroupId: input.examGroupId }
+  if (input.query) {
+    where.student = {
+      OR: [
+        { name: { contains: input.query, mode: "insensitive" } },
+        { nameBn: { contains: input.query, mode: "insensitive" } },
+      ],
+    }
+  }
+
+  const page = input.page ?? 1
+  const limit = input.limit ?? 50
+  const skip = (page - 1) * limit
+
+  const [results, totalItems] = await Promise.all([
+    db.examGroupResult.findMany({
+      where,
+      orderBy,
+      skip,
+      take: limit,
+      include: {
+        student: {
+          select: {
+            id: true,
+            studentId: true,
+            name: true,
+            nameBn: true,
+            imageUrl: true,
+            roll: true,
+            section: true,
+          },
+        },
+      },
+    }),
+    db.examGroupResult.count({ where: { examGroupId: input.examGroupId } }),
+  ])
+
+  const leaderboard = results.map((r) => ({
+    id: r.id,
+    meritPosition: r.meritPosition,
+    totalObtainedMarks: r.totalObtainedMarks,
+    totalMaxMarks: r.totalMaxMarks,
+    percentage: r.percentage,
+    gpa: r.gpa,
+    grade: r.grade,
+    status: r.status,
+    examsAttempted: r.examsAttempted,
+    totalExamsInGroup: r.totalExamsInGroup,
+    calculatedAt: r.calculatedAt,
+    student: {
+      id: r.student.id,
+      studentId: r.student.studentId,
+      name: r.student.name || r.student.nameBn || "শিক্ষার্থী",
+      image: r.student.imageUrl,
+      roll: r.student.roll,
+      section: r.student.section,
+    },
+    isCurrentUser: student ? r.student.id === student.id : false,
+  }))
+
+  // The current user's entry (may be null if not yet calculated)
+  const currentUserEntry = leaderboard.find((e) => e.isCurrentUser) ?? null
+
+  return {
+    examGroup: group,
+    leaderboard,
+    totalParticipants: totalItems,
+    currentUserEntry,
+    totalPages: Math.ceil(totalItems / limit) || 1,
+    page,
+    limit,
+  }
+}
+
+

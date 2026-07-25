@@ -123,3 +123,17 @@ export function useRemoveExamSubject() {
     },
   })
 }
+
+/**
+ * Hook to update assigned MCQ IDs for an exam subject.
+ */
+export function useUpdateExamSubjectMcqs() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    ...trpc.exam.updateSubjectMcqs.mutationOptions(),
+    onSuccess: () => {
+      queryClient.invalidateQueries(trpc.exam.pathFilter())
+    },
+  })
+}
