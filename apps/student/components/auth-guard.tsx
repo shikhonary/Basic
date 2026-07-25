@@ -48,10 +48,23 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       !isUserLoading &&
       !isProfileFetching &&
       isUserRole &&
+      !isSuperAdmin &&
       !studentProfileQuery.data &&
       !isOnboardingRoute
     ) {
       router.push("/onboarding")
+      return
+    }
+
+    // 3. Authenticated user who HAS completed onboarding but is on /onboarding -> redirect to /
+    if (
+      session &&
+      !isUserLoading &&
+      !isProfileFetching &&
+      studentProfileQuery.data &&
+      isOnboardingRoute
+    ) {
+      router.push("/")
     }
   }, [
     isAuthRoute,
@@ -61,6 +74,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     isProfileFetching,
     studentProfileQuery.data,
     isUserRole,
+    isSuperAdmin,
     router,
   ])
 
@@ -75,7 +89,10 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   }
 
   // Loading state for session or student profile check
-  if (isUserLoading || (!!session && isUserRole && isProfileFetching && !studentProfileQuery.data)) {
+  if (
+    isUserLoading ||
+    (!!session && isUserRole && isProfileFetching)
+  ) {
     return (
       <div className="flex min-h-svh items-center justify-center bg-surface">
         <div className="flex flex-col items-center gap-4">
@@ -94,11 +111,6 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     return null
   }
 
-  // Allow access if user is on /onboarding route
-  if (isOnboardingRoute) {
-    return <>{children}</>
-  }
-
   // If not super admin and not a standard user role, show unauthorized screen
   if (!isSuperAdmin && !isUserRole) {
     return (
@@ -110,5 +122,22 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     )
   }
 
+  // Prevent rendering protected children if user has not completed onboarding and is not yet on /onboarding
+  if (!isSuperAdmin && !studentProfileQuery.data && !isOnboardingRoute) {
+    return (
+      <div className="flex min-h-svh items-center justify-center bg-surface">
+        <div className="flex flex-col items-center gap-4">
+          <span className="material-symbols-outlined animate-spin text-[32px] text-primary">
+            sync
+          </span>
+          <span className="text-sm font-medium text-on-surface-variant">
+            Redirecting to onboarding...
+          </span>
+        </div>
+      </div>
+    )
+  }
+
   return <>{children}</>
 }
+
