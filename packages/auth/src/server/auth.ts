@@ -58,6 +58,32 @@ export const auth = betterAuth({
     }),
   ],
   databaseHooks: {
+    verification: {
+      create: {
+        before: async (verification) => {
+          if (verification?.identifier) {
+            try {
+              const deleted = await db.verification.deleteMany({
+                where: {
+                  identifier: verification.identifier,
+                },
+              })
+              if (deleted.count > 0) {
+                console.log(
+                  `[Better Auth/Verification Hook] Cleared ${deleted.count} existing verification record(s) for identifier: ${verification.identifier}`
+                )
+              }
+            } catch (error) {
+              console.error(
+                `[Better Auth/Verification Hook] Failed to clean existing verification records for identifier ${verification.identifier}:`,
+                error
+              )
+            }
+          }
+          return { data: verification }
+        },
+      },
+    },
     user: {
       create: {
         after: async (user) => {

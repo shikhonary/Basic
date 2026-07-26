@@ -74,10 +74,18 @@ export async function updateUserContact(
   if (input.phoneNumber !== undefined) {
     dataToUpdate.phoneNumber = input.phoneNumber
     dataToUpdate.phoneNumberVerified = false
+    // Clear any existing verification OTPs for this phone number
+    await db.verification.deleteMany({
+      where: { identifier: input.phoneNumber },
+    })
   }
   if (input.email !== undefined) {
     dataToUpdate.email = input.email
     dataToUpdate.emailVerified = false
+    // Clear any existing verification links for this email
+    await db.verification.deleteMany({
+      where: { identifier: input.email },
+    })
   }
 
   return db.user.update({
