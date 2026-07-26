@@ -20,12 +20,14 @@ import {
   GraduationCap,
 } from "lucide-react"
 import { useCurrentUser } from "@/modules/user/services/use-user"
+import { useStudentProfile } from "@/modules/profile/services/use-profile"
 import { DashboardVerificationBanner } from "@/modules/auth/components/DashboardVerificationBanner"
 import { DashboardVerificationModal } from "@/modules/auth/components/DashboardVerificationModal"
 
 export default function DashboardPage() {
   const router = useRouter()
   const { session, isVerified } = useCurrentUser()
+  const { data: studentProfile } = useStudentProfile()
   const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false)
   // Ticking real-time timestamp for exam status calculation
   const [nowTime, setNowTime] = useState<number>(Date.now())
@@ -81,7 +83,7 @@ export default function DashboardPage() {
     }
   }, [items, nowTime])
 
-  const studentName = session?.user?.name || "শিক্ষার্থী"
+  const studentName = studentProfile?.nameBn || studentProfile?.name || session?.user?.name || "শিক্ষার্থী"
 
   // Time-of-day greeting generator
   const greeting = useMemo(() => {
