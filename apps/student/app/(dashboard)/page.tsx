@@ -20,10 +20,13 @@ import {
   GraduationCap,
 } from "lucide-react"
 import { useCurrentUser } from "@/modules/user/services/use-user"
+import { DashboardVerificationBanner } from "@/modules/auth/components/DashboardVerificationBanner"
+import { DashboardVerificationModal } from "@/modules/auth/components/DashboardVerificationModal"
 
 export default function DashboardPage() {
   const router = useRouter()
-  const { session } = useCurrentUser()
+  const { session, isVerified } = useCurrentUser()
+  const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false)
   // Ticking real-time timestamp for exam status calculation
   const [nowTime, setNowTime] = useState<number>(Date.now())
 
@@ -94,8 +97,17 @@ export default function DashboardPage() {
     router.push("/auth/sign-in")
   }
 
+  const handleRequireVerification = () => {
+    setIsVerificationModalOpen(true)
+  }
+
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 py-4 px-2 sm:px-4">
+      {/* ─────────────────────────────────────────────────────────────
+         VERIFICATION ALERT BANNER FOR UNVERIFIED STUDENTS
+      ───────────────────────────────────────────────────────────── */}
+      <DashboardVerificationBanner onOpenModal={() => setIsVerificationModalOpen(true)} />
+
       {/* ─────────────────────────────────────────────────────────────
          1. WELCOME HERO BANNER AT THE TOP
       ───────────────────────────────────────────────────────────── */}
@@ -216,7 +228,11 @@ export default function DashboardPage() {
           <div className="space-y-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {liveExams.map((exam) => (
-                <StudentExamCard key={exam.id} exam={exam} />
+                <StudentExamCard
+                  key={exam.id}
+                  exam={exam}
+                  onRequireVerification={!isVerified ? handleRequireVerification : undefined}
+                />
               ))}
             </div>
 
@@ -228,7 +244,11 @@ export default function DashboardPage() {
                 </h3>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {upcomingExams.slice(0, 3).map((exam) => (
-                    <StudentExamCard key={exam.id} exam={exam} />
+                    <StudentExamCard
+                      key={exam.id}
+                      exam={exam}
+                      onRequireVerification={!isVerified ? handleRequireVerification : undefined}
+                    />
                   ))}
                 </div>
               </div>
@@ -238,14 +258,22 @@ export default function DashboardPage() {
           /* No Live Exam currently, but Upcoming Exams exist */
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {upcomingExams.map((exam) => (
-              <StudentExamCard key={exam.id} exam={exam} />
+              <StudentExamCard
+                key={exam.id}
+                exam={exam}
+                onRequireVerification={!isVerified ? handleRequireVerification : undefined}
+              />
             ))}
           </div>
         ) : items.length > 0 ? (
           /* Render available/completed exams */
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {items.map((exam) => (
-              <StudentExamCard key={exam.id} exam={exam} />
+              <StudentExamCard
+                key={exam.id}
+                exam={exam}
+                onRequireVerification={!isVerified ? handleRequireVerification : undefined}
+              />
             ))}
           </div>
         ) : (
@@ -269,6 +297,14 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+
+      {/* ─────────────────────────────────────────────────────────────
+         VERIFICATION MODAL DIALOG
+      ───────────────────────────────────────────────────────────── */}
+      <DashboardVerificationModal
+        open={isVerificationModalOpen}
+        onOpenChange={setIsVerificationModalOpen}
+      />
     </div>
   )
 }

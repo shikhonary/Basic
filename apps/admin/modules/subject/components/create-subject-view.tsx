@@ -26,7 +26,7 @@ const createSubjectSchema = z.object({
   name: z.string().min(1, "English name is required"),
   nameBn: z.string().min(1, "Bengali name is required"),
   level: z.string().min(1, "Please select an academic level"),
-  group: z.string().optional(),
+  group: z.string().min(1, "Please select a group"),
   position: z.coerce.number().int().min(0, "Position must be 0 or greater"),
   academicClassIds: z.array(z.string()),
 })
@@ -52,7 +52,7 @@ export function CreateSubjectView() {
       name: "",
       nameBn: "",
       level: "",
-      group: "",
+      group: "General",
       position: 0,
       academicClassIds: [],
     },
@@ -87,7 +87,7 @@ export function CreateSubjectView() {
         name: data.name.trim(),
         nameBn: data.nameBn.trim(),
         level: data.level,
-        group: data.group && data.group.trim() !== "" ? data.group.trim() : null,
+        group: data.group.trim(),
         position: Number(data.position) || 0,
         academicClassIds: data.academicClassIds,
       })
@@ -236,7 +236,7 @@ export function CreateSubjectView() {
               {/* Group */}
               <div className="space-y-2">
                 <Label className="block font-label-sm text-xs font-medium uppercase tracking-wider text-on-surface-variant">
-                  Group / Discipline (Optional)
+                  Group / Discipline
                 </Label>
                 <Controller
                   name="group"
@@ -248,13 +248,14 @@ export function CreateSubjectView() {
                       </span>
                       <Select
                         disabled={isSubmitting}
-                        value={field.value || "none"}
-                        onValueChange={(val) => field.onChange(val === "none" ? "" : val)}
+                        value={field.value || "General"}
+                        onValueChange={field.onChange}
                       >
                         <SelectTrigger className="w-full rounded-lg border border-outline-variant bg-white py-3 pl-10 pr-10 font-body-md text-on-surface transition-all cursor-pointer focus:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:outline-hidden h-auto justify-between">
-                          <SelectValue placeholder="None / General" />
+                          <SelectValue placeholder="Select group..." />
                         </SelectTrigger>
                         <SelectContent className="bg-white border border-outline-variant shadow-md rounded-lg">
+                          <SelectItem value="General">General</SelectItem>
                           <SelectItem value="Science">Science</SelectItem>
                           <SelectItem value="Commerce">Commerce / Business</SelectItem>
                           <SelectItem value="Humanities">Humanities / Arts</SelectItem>
@@ -263,6 +264,9 @@ export function CreateSubjectView() {
                     </div>
                   )}
                 />
+                {errors.group && (
+                  <p className="text-xs text-error">{errors.group.message}</p>
+                )}
               </div>
 
               {/* Position / Order */}
@@ -301,78 +305,69 @@ export function CreateSubjectView() {
                   </p>
                 </div>
 
-                {availableClasses.length === 0 ? (
-                  <div className="rounded-lg border border-dashed border-outline-variant p-4 text-center text-xs text-outline">
-                    {selectedLevel
-                      ? `No academic classes found for level "${selectedLevel}".`
-                      : "Select an Academic Level to filter classes, or create academic classes first."}
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+                {availableClasses.length > 0 ? (
+                  <div className="flex flex-wrap gap-2.5 pt-2">
                     {availableClasses.map((ac) => {
                       const isSelected = selectedClassIds.includes(ac.id)
                       return (
-                        <div
+                        <button
                           key={ac.id}
+                          type="button"
+                          disabled={isSubmitting}
                           onClick={() => toggleAcademicClass(ac.id)}
-                          className={`flex cursor-pointer items-center justify-between rounded-xl border p-3 transition-all ${isSelected
-                            ? "border-primary bg-primary/5 text-primary font-bold shadow-xs"
-                            : "border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container-low"
-                            }`}
+                          className={`inline-flex items-center gap-2 rounded-lg px-3.5 py-2 font-body-md text-xs font-medium transition-all cursor-pointer ${
+                            isSelected
+                              ? "bg-primary text-white shadow-xs"
+                              : "bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high border border-outline-variant/50"
+                          }`}
                         >
-                          <div className="flex flex-col overflow-hidden">
-                            <span className="text-sm font-semibold truncate">
-                              {ac.nameEn}
-                            </span>
-                            <span className="text-xs text-outline font-bengali truncate">
-                              {ac.nameBn}
-                            </span>
-                          </div>
-                          <Badge
-                            variant={isSelected ? "default" : "outline"}
-                            className="ml-2 text-[10px] px-1.5 py-0.5"
-                          >
-                            {isSelected ? "Mapped" : "Add"}
-                          </Badge>
-                        </div>
+                          <span className="material-symbols-outlined text-sm">
+                            {isSelected ? "check_circle" : "add_circle"}
+                          </span>
+                          <span>
+                            {ac.nameEn} ({ac.nameBn})
+                          </span>
+                        </button>
                       )
                     })}
+                  </div>
+                ) : (
+                  <div className="rounded-lg border border-dashed border-outline-variant p-4 text-center font-body-md text-xs text-outline">
+                    {selectedLevel
+                      ? "No active academic classes found for the selected level."
+                      : "Please select an Academic Level above to load associated classes."}
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Meta & Actions */}
-            <div className="mt-4 flex flex-col items-center justify-between gap-6 border-t border-outline-variant pt-8 sm:flex-row">
-              <div className="flex items-center space-x-2 text-on-surface-variant">
-                <span className="material-symbols-outlined text-sm">history</span>
-                <span className="text-[12px]">Last edited: Just now by Admin</span>
-              </div>
-              <div className="flex w-full items-center space-x-4 sm:w-auto">
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={isSubmitting}
-                  onClick={() => router.push("/subjects")}
-                  className="flex-1 rounded-lg border border-outline px-8 py-3 font-bold text-primary transition-all active:scale-95 hover:bg-surface-container-low sm:flex-none cursor-pointer h-auto normal-case tracking-normal disabled:opacity-50"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex flex-1 items-center justify-center space-x-2 rounded-lg bg-primary-container px-10 py-3 font-bold text-on-primary-container shadow-md transition-all active:scale-95 hover:bg-primary hover:text-white disabled:opacity-50 sm:flex-none cursor-pointer h-auto normal-case tracking-normal"
-                >
-                  {isSubmitting ? (
-                    <span className="material-symbols-outlined animate-spin text-[20px]">
+            {/* Action Buttons */}
+            <div className="flex items-center justify-end space-x-4 border-t border-outline-variant pt-6">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isSubmitting}
+                onClick={() => router.push("/subjects")}
+                className="rounded-lg border border-outline-variant px-6 py-2.5 font-label-sm text-on-surface transition-all hover:bg-surface-container-high h-auto cursor-pointer"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="rounded-lg bg-primary px-8 py-2.5 font-label-sm font-bold text-white transition-all hover:bg-primary/90 shadow-sm h-auto cursor-pointer"
+              >
+                {isSubmitting ? (
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined animate-spin text-sm">
                       progress_activity
                     </span>
-                  ) : (
-                    <span className="material-symbols-outlined text-[20px]">save</span>
-                  )}
-                  <span>{isSubmitting ? "Saving..." : "Save Subject"}</span>
-                </Button>
-              </div>
+                    <span>Saving...</span>
+                  </div>
+                ) : (
+                  "Create Subject"
+                )}
+              </Button>
             </div>
           </form>
         </CardContent>

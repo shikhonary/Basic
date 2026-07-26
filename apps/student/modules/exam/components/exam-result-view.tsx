@@ -135,7 +135,7 @@ export function ExamResultView({ attemptId }: ExamResultViewProps) {
       </div>
 
       {/* Main Score & Metrics Hero Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/15 via-primary/5 to-surface-container-lowest p-6 md:p-8 border border-primary/20 shadow-sm space-y-6">
+      <div className="relative overflow-hidden rounded-2xl bg-surface-container-lowest p-6 md:p-8 border border-outline-variant/40 shadow-xs space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
             <h1 className="font-extrabold text-2xl md:text-3xl text-on-surface tracking-tight">

@@ -16,13 +16,13 @@ import { getSessionCookie } from "better-auth/cookies"
 
 const PUBLIC_ROUTES = ["/auth/sign-in", "/auth/sign-up"] as const
 const AUTH_ROUTES = ["/auth/sign-in", "/auth/sign-up"] as const
-const API_PREFIXES = ["/api/auth", "/api/trpc"] as const
+const API_PREFIXES = ["/api/auth", "/api/trpc", "/api/uploadthing"] as const
 
 export async function proxy(req: NextRequest): Promise<NextResponse> {
   const { pathname } = req.nextUrl
 
-  // 1. Always allow API routes through (auth API handles its own validation, tRPC has its own middleware)
-  if (API_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
+  // 1. Always allow API routes through (auth API, tRPC, UploadThing handle their own validation)
+  if (pathname.startsWith("/api/")) {
     return NextResponse.next()
   }
 

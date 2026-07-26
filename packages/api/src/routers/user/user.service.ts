@@ -62,6 +62,31 @@ export async function updateUser(db: PrismaClient, input: UpdateUserInput) {
   })
 }
 
+export async function updateUserContact(
+  db: PrismaClient,
+  userId: string,
+  input: { phoneNumber?: string; email?: string }
+) {
+  const existing = await db.user.findUnique({ where: { id: userId }, select: { id: true } })
+  if (!existing) throw notFound("User")
+
+  const dataToUpdate: any = {}
+  if (input.phoneNumber !== undefined) {
+    dataToUpdate.phoneNumber = input.phoneNumber
+    dataToUpdate.phoneNumberVerified = false
+  }
+  if (input.email !== undefined) {
+    dataToUpdate.email = input.email
+    dataToUpdate.emailVerified = false
+  }
+
+  return db.user.update({
+    where: { id: userId },
+    data: dataToUpdate,
+    select: safeUserSelect,
+  })
+}
+
 export async function deleteUser(db: PrismaClient, input: DeleteUserInput) {
   const existing = await db.user.findUnique({
     where: { id: input.id },

@@ -12,10 +12,12 @@ import { createTRPCRouter, protectedProcedure } from "../../trpc"
 import {
   getQuestionBankMcqSchema,
   listQuestionBankSchema,
+  questionBankBoardYearsSchema,
   questionBankByChapterSchema,
   questionBankStatsSchema,
 } from "./question-bank.schema"
 import {
+  getQuestionBankBoardYears,
   getQuestionBankByChapter,
   getQuestionBankMcqById,
   getQuestionBankStats,
@@ -54,4 +56,11 @@ export const questionBankRouter = createTRPCRouter({
   byChapter: protectedProcedure
     .input(questionBankByChapterSchema)
     .query(({ input }) => getQuestionBankByChapter(db, input)),
+
+  /**
+   * Get organized Board + Year combinations for a subject (and optional chapter).
+   */
+  boardYears: protectedProcedure
+    .input(questionBankBoardYearsSchema)
+    .query(({ input }) => getQuestionBankBoardYears(db, input)),
 })

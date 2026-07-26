@@ -107,3 +107,54 @@ export async function completeStudentOnboarding(
     })
   }
 }
+
+/**
+ * Update existing student profile and sync user fields.
+ */
+export async function updateStudentProfile(
+  db: PrismaClient,
+  userId: string,
+  input: Partial<CompleteStudentOnboardingInput>
+) {
+  const existingStudent = await db.student.findUnique({
+    where: { userId },
+  })
+
+  if (!existingStudent) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "Student profile not found for this user",
+    })
+  }
+
+  if (input.academicClassId) {
+    const classExists = await db.academicClass.findUnique({
+      where: { id: input.academicClassId },
+    })
+    if (!classExists) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Selected academic class does not exist",
+      })
+    }
+  }
+
+  const updatedStudent = await db.student.update({
+    where: { id: existingStudent.id },
+    data: input,
+    select: safeStudentSelect,
+  })
+
+  // Sync user name/image if updated
+  if (input.name || input.imageUrl) {
+    const userDataToUpdate: any = {}
+    if (input.name) userDataToUpdate.name = input.name
+    if (input.imageUrl) userDataToUpdate.image = input.imageUrl
+    await db.user.update({
+      where: { id: userId },
+      data: userDataToUpdate,
+    })
+  }
+
+  return updatedStudent
+}

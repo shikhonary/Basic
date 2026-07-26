@@ -43,6 +43,13 @@ export const updateUserRolesSchema = z.object({
 
 export type UpdateUserRolesInput = z.infer<typeof updateUserRolesSchema>
 
+export const updateContactSchema = z.object({
+  phoneNumber: z.string().optional(),
+  email: z.string().email().optional(),
+})
+
+export type UpdateContactInput = z.infer<typeof updateContactSchema>
+
 // ---------------------------------------------------------------------------
 // Output shapes (safe fields only — never include password hashes etc.)
 // ---------------------------------------------------------------------------
@@ -54,6 +61,8 @@ export const safeUserSelect = {
   name: true,
   image: true,
   emailVerified: true,
+  phoneNumber: true,
+  phoneNumberVerified: true,
   createdAt: true,
   updatedAt: true,
 } as const

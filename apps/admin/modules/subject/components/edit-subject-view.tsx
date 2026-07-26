@@ -26,7 +26,7 @@ const editSubjectSchema = z.object({
   name: z.string().min(1, "English name is required"),
   nameBn: z.string().min(1, "Bengali name is required"),
   level: z.string().min(1, "Please select an academic level"),
-  group: z.string().optional(),
+  group: z.string().min(1, "Please select a group"),
   position: z.coerce.number().int().min(0, "Position must be 0 or greater"),
   academicClassIds: z.array(z.string()),
 })
@@ -58,7 +58,7 @@ export function EditSubjectView({ id }: EditSubjectViewProps) {
       name: "",
       nameBn: "",
       level: "",
-      group: "",
+      group: "General",
       position: 0,
       academicClassIds: [],
     },
@@ -74,7 +74,7 @@ export function EditSubjectView({ id }: EditSubjectViewProps) {
         name: subject.name,
         nameBn: subject.nameBn,
         level: subject.level,
-        group: subject.group || "",
+        group: subject.group || "General",
         position: subject.position,
         academicClassIds: mappedClassIds,
       })
@@ -111,7 +111,7 @@ export function EditSubjectView({ id }: EditSubjectViewProps) {
         name: data.name.trim(),
         nameBn: data.nameBn.trim(),
         level: data.level,
-        group: data.group && data.group.trim() !== "" ? data.group.trim() : null,
+        group: data.group.trim(),
         position: Number(data.position) || 0,
         academicClassIds: data.academicClassIds,
       })
@@ -281,7 +281,7 @@ export function EditSubjectView({ id }: EditSubjectViewProps) {
               {/* Group */}
               <div className="space-y-2">
                 <Label className="block font-label-sm text-xs font-medium uppercase tracking-wider text-on-surface-variant">
-                  Group / Discipline (Optional)
+                  Group / Discipline
                 </Label>
                 <Controller
                   name="group"
@@ -293,14 +293,14 @@ export function EditSubjectView({ id }: EditSubjectViewProps) {
                       </span>
                       <Select
                         disabled={isSubmitting}
-                        value={field.value || "none"}
-                        onValueChange={(val) => field.onChange(val === "none" ? "" : val)}
+                        value={field.value || "General"}
+                        onValueChange={field.onChange}
                       >
                         <SelectTrigger className="w-full rounded-lg border border-outline-variant bg-white py-3 pl-10 pr-10 font-body-md text-on-surface transition-all cursor-pointer focus:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:outline-hidden h-auto justify-between">
-                          <SelectValue placeholder="None / General" />
+                          <SelectValue placeholder="Select group..." />
                         </SelectTrigger>
                         <SelectContent className="bg-white border border-outline-variant shadow-md rounded-lg">
-                          <SelectItem value="none">None / General</SelectItem>
+                          <SelectItem value="General">General</SelectItem>
                           <SelectItem value="Science">Science</SelectItem>
                           <SelectItem value="Commerce">Commerce / Business</SelectItem>
                           <SelectItem value="Humanities">Humanities / Arts</SelectItem>
@@ -309,6 +309,9 @@ export function EditSubjectView({ id }: EditSubjectViewProps) {
                     </div>
                   )}
                 />
+                {errors.group && (
+                  <p className="text-xs text-error">{errors.group.message}</p>
+                )}
               </div>
 
               {/* Position / Order */}

@@ -17,7 +17,15 @@ import {
 import { Input } from "@workspace/ui/components/input"
 import { Button } from "@workspace/ui/components/button"
 import { Skeleton } from "@workspace/ui/components/skeleton"
+import { Badge } from "@workspace/ui/components/badge"
 import { StudentExamCard } from "./student-exam-card"
+
+function toBengaliNumerals(numStr: string | number): string {
+  const bengaliDigits = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"]
+  return numStr
+    .toString()
+    .replace(/[0-9]/g, (digit) => bengaliDigits[parseInt(digit, 10)] ?? digit)
+}
 
 type FilterTab = "all" | "available" | "in_progress" | "completed"
 
@@ -70,88 +78,99 @@ export function StudentExamListView() {
 
   return (
     <div className="w-full min-h-screen pb-20">
-      {/* ── Hero Header – Solid Primary Color ── */}
-      <div className="relative overflow-hidden bg-primary px-4 pt-7 pb-10 md:rounded-3xl">
-        <div className="relative z-10 space-y-4">
-          {/* Top row: class badge + portal label */}
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm border border-white/20">
-              <Zap className="h-3.5 w-3.5 text-yellow-300" />
-              অনলাইন এক্সাম পোর্টাল
-            </span>
+      {/* ── Header Info Banner (Question Bank design concept) ── */}
+      <header className="mb-8 bg-surface-container-lowest border border-outline-variant/40 rounded-2xl p-6 md:p-8 shadow-xs relative overflow-hidden">
+        {/* Background Decorative Element */}
+        <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none text-primary">
+          <ClipboardList className="w-36 h-36" />
+        </div>
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="flex items-start gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-primary-container/30 text-primary flex items-center justify-center shrink-0">
+              <ClipboardList className="h-7 w-7" />
+            </div>
+
+            <div>
+              <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                <Badge variant="secondary" className="bg-primary/10 text-primary text-xs font-semibold">
+                  <Zap className="h-3 w-3 mr-1" />
+                  অনলাইন এক্সাম পোর্টাল
+                </Badge>
+              </div>
+
+              <h1 className="font-headline-md text-2xl md:text-3xl font-extrabold text-on-background">
+                আমার পরীক্ষাসমূহ
+              </h1>
+
+              <p className="text-sm text-on-surface-variant max-w-md mt-1">
+                আপনার শ্রেণীর নির্ধারিত এমসিকিউ পরীক্ষাগুলো সম্পন্ন করুন ও সাথে সাথে ফলাফল দেখুন।
+              </p>
+            </div>
           </div>
 
-          {/* Headline */}
-          <div>
-            <h1 className="text-2xl font-extrabold leading-tight text-white drop-shadow-sm md:text-4xl">
-              আমার পরীক্ষাসমূহ
-            </h1>
-            <p className="mt-1.5 text-sm text-white/75 max-w-md">
-              আপনার শ্রেণীর নির্ধারিত এমসিকিউ পরীক্ষাগুলো সম্পন্ন করুন ও সাথে সাথে ফলাফল দেখুন।
-            </p>
-          </div>
-
-          {/* Stats row */}
-          <div className="flex flex-wrap gap-2 pt-1">
-            <HeroStat icon={<ClipboardList className="h-3.5 w-3.5" />} label={`${counts.all} মোট`} />
-            <HeroStat icon={<TrendingUp className="h-3.5 w-3.5" />} label={`${counts.in_progress} চলমান`} />
-            <HeroStat icon={<CheckCircle2 className="h-3.5 w-3.5" />} label={`${counts.completed} সম্পন্ন`} />
-            <HeroStat icon={<BookOpen className="h-3.5 w-3.5" />} label={`${counts.available} নতুন`} />
+          {/* Stats Summary Card */}
+          <div className="flex items-center gap-3 bg-surface-container-low px-4 py-3 rounded-xl border border-outline-variant/30 shrink-0">
+            <ClipboardList className="h-5 w-5 text-primary shrink-0" />
+            <div>
+              <p className="text-xs text-on-surface-variant font-medium">মোট নির্ধারিত পরীক্ষা</p>
+              <p className="text-sm font-bold text-on-background">
+                {toBengaliNumerals(counts.all)} টি পরীক্ষা
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* ── Sticky Controls ── */}
-      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-outline-variant/30 px-4 py-3 md:static md:bg-transparent md:border-none md:backdrop-blur-none md:px-0 md:pt-6 md:pb-0">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          {/* Full-width Search on Mobile (Placed before tab filters), fixed-width on desktop */}
-          <div className="relative w-full md:w-72 md:order-2">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-outline" />
-            <Input
-              type="text"
-              placeholder="পরীক্ষার নাম দিয়ে খুঁজুন..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-9 rounded-2xl bg-surface-container-lowest border-outline-variant/50 text-sm"
-            />
-            {search && (
-              <button
-                type="button"
-                onClick={() => setSearch("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-
-          {/* Filter Tabs – horizontal scroll on mobile, comes after search on mobile */}
-          <div className="flex items-center gap-1 overflow-x-auto no-scrollbar md:order-1">
-            {FILTER_TABS.map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                onClick={() => setActiveTab(tab.key)}
+      {/* ── Sticky Filter & Search Controls (Question Bank sticky concept) ── */}
+      <div className="sticky top-16 z-30 mb-6 bg-surface-container-lowest/95 backdrop-blur-md border border-outline-variant/40 rounded-xl p-4 sm:p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+        {/* Filter Tabs */}
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+          {FILTER_TABS.map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveTab(tab.key)}
+              className={`
+                flex shrink-0 items-center gap-1.5 rounded-lg px-3.5 py-2 text-xs font-semibold transition-all cursor-pointer
+                ${activeTab === tab.key
+                  ? "bg-primary text-white shadow-xs"
+                  : "bg-surface-container-low text-on-surface-variant hover:bg-surface-container hover:text-on-surface"
+                }
+              `}
+            >
+              {tab.label}
+              <span
                 className={`
-                  flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all
-                  ${activeTab === tab.key
-                    ? "bg-primary text-white shadow-sm"
-                    : "bg-surface-container text-on-surface-variant hover:bg-surface-container-high"
-                  }
+                  rounded-md px-1.5 py-0.5 text-[10px] font-bold leading-3
+                  ${activeTab === tab.key ? "bg-white/25 text-white" : "bg-surface-container-high text-on-surface-variant"}
                 `}
               >
-                {tab.label}
-                <span
-                  className={`
-                    rounded-full px-1.5 py-0 text-[10px] font-bold leading-4
-                    ${activeTab === tab.key ? "bg-white/25 text-white" : "bg-surface-container-high text-on-surface-variant"}
-                  `}
-                >
-                  {counts[tab.key]}
-                </span>
-              </button>
-            ))}
-          </div>
+                {toBengaliNumerals(counts[tab.key])}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {/* Search Bar */}
+        <div className="relative w-full md:w-72">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-on-surface-variant" />
+          <Input
+            type="text"
+            placeholder="পরীক্ষার নাম দিয়ে খুঁজুন..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-10 pr-9 h-10 rounded-lg bg-surface-container-low/50 border-outline-variant/40 text-sm placeholder:text-on-surface-variant/60 focus-visible:border-primary"
+          />
+          {search && (
+            <button
+              type="button"
+              onClick={() => setSearch("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface p-0.5 rounded-full"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -188,15 +207,6 @@ export function StudentExamListView() {
 }
 
 /* ── Helpers ── */
-
-function HeroStat({ icon, label }: { icon: React.ReactNode; label: string }) {
-  return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm border border-white/15">
-      {icon}
-      {label}
-    </span>
-  )
-}
 
 function LoadingGrid() {
   return (

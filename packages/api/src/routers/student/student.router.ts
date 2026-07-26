@@ -5,10 +5,14 @@
  */
 import { db } from "@workspace/db/main"
 import { createTRPCRouter, protectedProcedure } from "../../trpc"
-import { completeStudentOnboardingSchema } from "./student.schema"
+import {
+  completeStudentOnboardingSchema,
+  updateStudentProfileSchema,
+} from "./student.schema"
 import {
   completeStudentOnboarding,
   getStudentByUserId,
+  updateStudentProfile,
 } from "./student.service"
 
 export const studentRouter = createTRPCRouter({
@@ -26,5 +30,14 @@ export const studentRouter = createTRPCRouter({
     .input(completeStudentOnboardingSchema)
     .mutation(({ ctx, input }) => {
       return completeStudentOnboarding(db, ctx.session.user.id, input)
+    }),
+
+  /**
+   * Update student profile.
+   */
+  updateProfile: protectedProcedure
+    .input(updateStudentProfileSchema)
+    .mutation(({ ctx, input }) => {
+      return updateStudentProfile(db, ctx.session.user.id, input)
     }),
 })

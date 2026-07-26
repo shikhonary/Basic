@@ -42,6 +42,18 @@ export type CompleteStudentOnboardingInput = z.infer<
   typeof completeStudentOnboardingSchema
 >
 
+export const updateStudentProfileSchema = completeStudentOnboardingSchema.partial().extend({
+  studentId: z.coerce.number().int().optional(),
+  name: z.string().optional(),
+  nameBn: z.string().optional(),
+  mPhone: z.string().optional(),
+  academicClassId: z.string().optional(),
+})
+
+export type UpdateStudentProfileInput = z.infer<
+  typeof updateStudentProfileSchema
+>
+
 export const safeStudentSelect = {
   id: true,
   studentId: true,

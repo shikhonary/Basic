@@ -11,12 +11,14 @@ import {
   protectedProcedure,
   superAdminProcedure,
 } from "../../trpc"
+import { db } from "@workspace/db/main"
 import {
   deleteUserSchema,
   getUserSchema,
   listUsersSchema,
   updateUserSchema,
   updateUserRolesSchema,
+  updateContactSchema,
 } from "./user.schema"
 import {
   deleteUser,
@@ -24,6 +26,7 @@ import {
   listUsers,
   updateUser,
   updateUserRoles,
+  updateUserContact,
 } from "./user.service"
 
 export const userRouter = createTRPCRouter({
@@ -36,6 +39,13 @@ export const userRouter = createTRPCRouter({
       roles: ctx.roles,
     }
   }),
+
+  /**
+   * Allow current user to update their phone number or email (e.g. to fix typos before verification).
+   */
+  updateContact: protectedProcedure
+    .input(updateContactSchema)
+    .mutation(({ ctx, input }) => updateUserContact(db, ctx.session.user.id, input)),
   /**
    * List all users with cursor-based pagination.
    * Returns only safe fields (no passwords, tokens, etc.).

@@ -50,6 +50,13 @@ export const questionBankByChapterSchema = z.object({
 
 export type QuestionBankByChapterInput = z.infer<typeof questionBankByChapterSchema>
 
+export const questionBankBoardYearsSchema = z.object({
+  subjectId: z.string().min(1, "Subject ID is required"),
+  chapterId: z.string().optional(),
+})
+
+export type QuestionBankBoardYearsInput = z.infer<typeof questionBankBoardYearsSchema>
+
 // ---------------------------------------------------------------------------
 // Select Shape
 // ---------------------------------------------------------------------------

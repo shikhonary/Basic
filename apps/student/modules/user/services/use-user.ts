@@ -17,15 +17,39 @@ export function useCurrentUser() {
     refetchOnWindowFocus: false,
   })
 
+  const user = (meQuery.data?.user ?? session?.user ?? null) as (typeof session extends { user: infer U } ? U : any) & {
+    phoneNumber?: string | null
+    phoneNumberVerified?: boolean
+    emailVerified?: boolean
+  }
+
   const isSuperAdmin =
     meQuery.data?.roles?.some((role) => role.name === "SUPER_ADMIN") ?? false
+
+  const isPhoneRegistration = Boolean(
+    user?.email?.endsWith("@phone.bec.local") || user?.phoneNumber
+  )
+
+  const phoneNumberVerified = Boolean(user?.phoneNumberVerified)
+  const emailVerified = Boolean(user?.emailVerified)
+
+  // Verification status logic
+  const isVerified = isPhoneRegistration ? phoneNumberVerified : emailVerified
+  const isPhoneUnverified = Boolean(user && isPhoneRegistration && !phoneNumberVerified)
+  const isEmailUnverified = Boolean(user && !isPhoneRegistration && !emailVerified)
 
   return {
     session,
     isSessionPending,
-    user: session?.user ?? null,
+    user,
     roles: meQuery.data?.roles ?? [],
     isSuperAdmin,
+    isVerified,
+    isPhoneRegistration,
+    phoneNumberVerified,
+    emailVerified,
+    isPhoneUnverified,
+    isEmailUnverified,
     isLoading: isSessionPending || (!!session && meQuery.isLoading),
     isError: meQuery.isError,
     refetch: meQuery.refetch,
@@ -100,4 +124,18 @@ export function useRolesForSelection(input?: RoleForSelectionInput) {
 
 /** Alias for useRolesForSelection */
 export const useRoleForSelection = useRolesForSelection
+
+/**
+ * Hook for logged in user to update contact info (phone/email).
+ */
+export function useUpdateUserContact() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    ...trpc.user.updateContact.mutationOptions(),
+    onSuccess: () => {
+      queryClient.invalidateQueries(trpc.user.pathFilter())
+    },
+  })
+}
 
