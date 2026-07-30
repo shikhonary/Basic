@@ -27,7 +27,7 @@ export function AcademicClassListView() {
     sort: selectedSort,
   })
 
-  const { data: statsData } = useAcademicClassStats()
+  const { data: statsData, isLoading: isStatsLoading } = useAcademicClassStats()
 
   const items = classesData?.items ?? []
   const totalItems = classesData?.totalItems ?? items.length
@@ -40,8 +40,9 @@ export function AcademicClassListView() {
 
       {/* Stats Cards */}
       <AcademicClassStatsCards
-        totalClassesCount={statsData.totalClassesCount}
-        activeLevelsCount={statsData.activeLevelsCount}
+        totalClassesCount={statsData?.totalClassesCount ?? 0}
+        activeLevelsCount={statsData?.activeLevelsCount ?? 0}
+        isLoading={isStatsLoading}
       />
 
       {/* Filters & Action Bar */}
@@ -58,9 +59,8 @@ export function AcademicClassListView() {
         onSortChange={(sort) => {
           setSearchParams({ sort: sort as any, page: 1 })
         }}
-        selectedLimit={limit}
-        onLimitChange={(newLimit) => {
-          setSearchParams({ limit: newLimit, page: 1 })
+        onResetAll={() => {
+          setSearchParams({ query: "", level: "All", sort: "All", page: 1 })
         }}
       />
 
@@ -77,6 +77,9 @@ export function AcademicClassListView() {
         totalItems={totalItems}
         totalPages={totalPages}
         onPageChange={(page) => setSearchParams({ page })}
+        onLimitChange={(newLimit) => {
+          setSearchParams({ limit: newLimit, page: 1 })
+        }}
       />
     </div>
   )

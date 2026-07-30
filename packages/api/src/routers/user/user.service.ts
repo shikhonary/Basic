@@ -7,12 +7,14 @@
  */
 import type { PrismaClient } from "@workspace/db/main"
 import { badRequest, notFound } from "../../utils/errors"
+import { auth } from "@workspace/auth"
 import type {
   DeleteUserInput,
   GetUserInput,
   ListUsersInput,
   UpdateUserInput,
   UpdateUserRolesInput,
+  CreateUserInput,
 } from "./user.schema"
 import { safeUserSelect } from "./user.schema"
 
@@ -21,24 +23,84 @@ import { safeUserSelect } from "./user.schema"
 // ---------------------------------------------------------------------------
 
 export async function listUsers(db: PrismaClient, input: ListUsersInput) {
-  const users = await db.user.findMany({
-    take: input.limit,
-    skip: input.cursor ? 1 : 0,
-    cursor: input.cursor ? { id: input.cursor } : undefined,
-    select: safeUserSelect,
-    orderBy: { createdAt: "desc" },
-  })
+  const limit = input.limit ?? 20
+  const page = input.page ?? 1
+  const skip = (page - 1) * limit
 
-  const nextCursor =
-    users.length === input.limit ? users[users.length - 1]?.id : undefined
+  const where: any = {}
 
-  return { users, nextCursor }
+  if (input.query) {
+    where.OR = [
+      { name: { contains: input.query, mode: "insensitive" } },
+      { email: { contains: input.query, mode: "insensitive" } },
+      { phoneNumber: { contains: input.query } },
+    ]
+  }
+
+  if (input.role && input.role !== "All") {
+    where.roles = {
+      some: {
+        name: {
+          equals: input.role.toUpperCase(),
+        },
+      },
+    }
+  }
+
+  if (input.status && input.status !== "All") {
+    if (input.status === "Verified") {
+      where.OR = [
+        { emailVerified: true },
+        { phoneNumberVerified: true },
+      ]
+    } else if (input.status === "Pending") {
+      where.emailVerified = false
+      where.phoneNumberVerified = false
+    }
+  }
+
+  const [items, totalItems] = await Promise.all([
+    db.user.findMany({
+      take: limit,
+      skip,
+      where,
+      select: {
+        ...safeUserSelect,
+        roles: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+    db.user.count({ where }),
+  ])
+
+  return {
+    users: items,
+    totalItems,
+    totalPages: Math.ceil(totalItems / limit) || 1,
+    page,
+    limit,
+  }
 }
 
 export async function getUserById(db: PrismaClient, input: GetUserInput) {
   const user = await db.user.findUnique({
     where: { id: input.id },
-    select: safeUserSelect,
+    select: {
+      ...safeUserSelect,
+      roles: {
+        select: {
+          id: true,
+          name: true,
+          description: true,
+        },
+      },
+    },
   })
 
   if (!user) throw notFound("User")
@@ -146,4 +208,86 @@ export async function updateUserRoles(
       },
     },
   })
+}
+
+export async function createUser(
+  db: PrismaClient,
+  input: CreateUserInput,
+) {
+  const existing = await db.user.findUnique({
+    where: { email: input.email },
+  })
+
+  if (existing) {
+    throw badRequest("User with this email already exists.")
+  }
+
+  const roles = await db.role.findMany({
+    where: { id: { in: input.roleIds } },
+    select: { id: true },
+  })
+
+  if (roles.length !== input.roleIds.length) {
+    const missing = input.roleIds.filter(
+      (id) => !roles.some((r) => r.id === id),
+    )
+    throw badRequest(`Role IDs not found: ${missing.join(", ")}`)
+  }
+
+  const created = await auth.api.signUpEmail({
+    body: {
+      email: input.email,
+      password: input.password,
+      name: input.name || "",
+      phoneNumber: input.phoneNumber || "",
+      phoneNumberVerified: false,
+    },
+  })
+
+  if (!created || !created.user) {
+    throw badRequest("Failed to register user credentials.")
+  }
+
+  await db.user.update({
+    where: { id: created.user.id },
+    data: {
+      roles: {
+        connect: input.roleIds.map((id) => ({ id })),
+      },
+    },
+  })
+
+  return db.user.findUnique({
+    where: { id: created.user.id },
+    select: safeUserSelect,
+  })
+}
+
+export async function getUserStats(db: PrismaClient) {
+  const [totalUsers, verifiedTeachers, pendingRequests] = await Promise.all([
+    db.user.count(),
+    db.user.count({
+      where: {
+        roles: {
+          some: {
+            name: "TEACHER",
+          },
+        },
+      },
+    }),
+    db.user.count({
+      where: {
+        emailVerified: false,
+        phoneNumberVerified: false,
+      },
+    }),
+  ])
+
+  return {
+    totalUsers,
+    totalUsersChange: "+12%",
+    verifiedTeachers,
+    pendingRequests,
+    systemHealth: 98,
+  }
 }

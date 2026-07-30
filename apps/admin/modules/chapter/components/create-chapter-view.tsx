@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select"
+import { BookOpen } from "lucide-react"
 
 const createChapterSchema = z.object({
   name: z.string().min(1, "English name is required"),
@@ -78,24 +79,24 @@ export function CreateChapterView() {
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
+    <div className="w-full max-w-4xl mx-auto px-2 sm:px-4">
       {/* Header Section */}
-      <div className="mb-10 flex flex-col gap-6 md:flex-row md:items-end justify-between">
+      <div className="mb-6 sm:mb-10 flex flex-col gap-4 md:flex-row md:items-end justify-between">
         <div className="max-w-2xl">
-          <nav className="mb-4 flex items-center space-x-2 text-on-surface-variant">
+          <nav className="mb-3 flex items-center space-x-2 text-on-surface-variant">
             <Link
               href="/chapters"
-              className="font-label-sm hover:text-primary transition-colors cursor-pointer"
+              className="font-label-sm text-xs hover:text-primary transition-colors cursor-pointer"
             >
               Chapters
             </Link>
-            <span className="material-symbols-outlined text-sm">chevron_right</span>
-            <span className="font-label-sm font-bold text-primary">Create New</span>
+            <span className="material-symbols-outlined text-xs">chevron_right</span>
+            <span className="font-label-sm text-xs font-bold text-primary">Create New</span>
           </nav>
-          <h2 className="mb-2 font-headline-md text-3xl font-extrabold text-primary">
-            Establish New Chapter
+          <h2 className="mb-1.5 font-headline-md text-2xl sm:text-3xl font-extrabold text-primary">
+            New Academic Chapter
           </h2>
-          <p className="font-body-md text-on-surface-variant leading-relaxed">
+          <p className="font-body-md text-xs sm:text-sm text-on-surface-variant leading-relaxed">
             Define new chapter unit under an academic subject, including English & Bengali titles and display ordering.
           </p>
         </div>
@@ -104,26 +105,34 @@ export function CreateChapterView() {
       {/* Error Alert */}
       {errorMessage && (
         <div className="mb-6 flex items-center gap-3 rounded-xl border border-error/30 bg-error-container/20 p-4 text-error">
-          <span className="material-symbols-outlined">error</span>
-          <span className="font-body-md text-sm font-medium">{errorMessage}</span>
+          <span className="material-symbols-outlined text-lg">error</span>
+          <span className="font-body-md text-xs sm:text-sm font-medium">{errorMessage}</span>
         </div>
       )}
 
       {/* Form Card */}
       <Card className="mx-auto max-w-4xl overflow-hidden rounded-xl border border-outline-variant bg-white p-0 shadow-xs ring-0">
-        <CardHeader className="border-b border-outline-variant bg-surface-container-lowest p-8">
-          <CardTitle className="font-headline-md text-[20px] font-semibold text-on-surface normal-case tracking-normal">
-            Chapter Specifications
-          </CardTitle>
+        <CardHeader className="border-b border-outline-variant/40 bg-surface-container-lowest p-4 sm:p-8 flex flex-row items-center gap-3 sm:gap-4">
+          <div className="flex size-10 sm:size-12 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">
+            <BookOpen className="h-5 w-5 sm:h-6 sm:w-6" />
+          </div>
+          <div>
+            <CardTitle className="font-headline-md text-base sm:text-[20px] font-extrabold text-on-surface normal-case tracking-normal">
+              Chapter Specifications
+            </CardTitle>
+            <p className="text-[11px] sm:text-xs font-body-md text-on-surface-variant mt-0.5">
+              Define parent subject mapping, titles, and display ordering
+            </p>
+          </div>
         </CardHeader>
-        <CardContent className="p-8">
+        <CardContent className="p-4 sm:p-8">
           <form
             onSubmit={handleSubmit(onSubmit, (invalidErrors) => {
               console.log("[CreateChapterView] Submit blocked by validation errors:", invalidErrors)
             })}
-            className="space-y-8"
+            className="space-y-6 sm:space-y-8"
           >
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-2">
               {/* Parent Subject */}
               <div className="space-y-2 md:col-span-2">
                 <Label className="block font-label-sm text-xs font-medium uppercase tracking-wider text-on-surface-variant">
@@ -134,7 +143,7 @@ export function CreateChapterView() {
                   control={control}
                   render={({ field }) => (
                     <div className="group relative">
-                      <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors z-10 pointer-events-none">
+                      <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors z-10 pointer-events-none text-base sm:text-lg">
                         book
                       </span>
                       <Select
@@ -142,13 +151,13 @@ export function CreateChapterView() {
                         value={field.value}
                         onValueChange={field.onChange}
                       >
-                        <SelectTrigger className="w-full rounded-lg border border-outline-variant bg-white py-3 pl-10 pr-10 font-body-md text-on-surface transition-all cursor-pointer focus:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:outline-hidden h-auto justify-between">
+                        <SelectTrigger className="w-full rounded-lg border border-outline-variant bg-white py-2.5 sm:py-3 pl-10 pr-10 font-body-md text-sm text-on-surface transition-all cursor-pointer focus:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:outline-hidden h-auto justify-between">
                           <SelectValue placeholder="Select parent subject..." />
                         </SelectTrigger>
                         <SelectContent className="bg-white border border-outline-variant shadow-md rounded-lg max-h-64">
                           {subjects.map((sub) => (
                             <SelectItem key={sub.id} value={sub.id}>
-                              {sub.nameBn}
+                              {sub.name} ({sub.nameBn})
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -167,7 +176,7 @@ export function CreateChapterView() {
                   Chapter Name (English)
                 </Label>
                 <div className="group relative">
-                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors z-10">
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors z-10 text-base sm:text-lg">
                     abc
                   </span>
                   <Input
@@ -175,7 +184,7 @@ export function CreateChapterView() {
                     disabled={isSubmitting}
                     placeholder="e.g. Motion and Force"
                     {...register("name")}
-                    className="w-full rounded-lg border border-outline-variant py-3 pl-10 pr-4 font-body-md text-on-surface transition-all bg-white focus:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:outline-hidden h-auto"
+                    className="w-full rounded-lg border border-outline-variant py-2.5 sm:py-3 pl-10 pr-4 font-body-md text-sm text-on-surface transition-all bg-white focus:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:outline-hidden h-auto"
                   />
                 </div>
                 {errors.name && (
@@ -189,7 +198,7 @@ export function CreateChapterView() {
                   Chapter Name (Bengali)
                 </Label>
                 <div className="group relative">
-                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors z-10">
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors z-10 text-base sm:text-lg">
                     translate
                   </span>
                   <Input
@@ -197,7 +206,7 @@ export function CreateChapterView() {
                     disabled={isSubmitting}
                     placeholder="উদাঃ বল ও গতি"
                     {...register("nameBn")}
-                    className="w-full rounded-lg border border-outline-variant py-3 pl-10 pr-4 font-body-md font-bengali text-on-surface transition-all bg-white focus:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:outline-hidden h-auto"
+                    className="w-full rounded-lg border border-outline-variant py-2.5 sm:py-3 pl-10 pr-4 font-body-md font-bengali text-sm text-on-surface transition-all bg-white focus:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:outline-hidden h-auto"
                   />
                 </div>
                 {errors.nameBn && (
@@ -211,7 +220,7 @@ export function CreateChapterView() {
                   Display Position
                 </Label>
                 <div className="group relative max-w-xs">
-                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors z-10">
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors z-10 text-base sm:text-lg">
                     format_list_numbered
                   </span>
                   <Input
@@ -219,10 +228,10 @@ export function CreateChapterView() {
                     min="0"
                     disabled={isSubmitting}
                     {...register("position")}
-                    className="w-full rounded-lg border border-outline-variant py-3 pl-10 pr-4 font-body-md text-on-surface transition-all bg-white focus:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:outline-hidden h-auto"
+                    className="w-full rounded-lg border border-outline-variant py-2.5 sm:py-3 pl-10 pr-4 font-body-md text-sm text-on-surface transition-all bg-white focus:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:outline-hidden h-auto"
                   />
                 </div>
-                <p className="text-[12px] italic text-outline">
+                <p className="text-[11px] text-outline italic">
                   Defines display order in chapter list
                 </p>
                 {errors.position && (
@@ -231,37 +240,31 @@ export function CreateChapterView() {
               </div>
             </div>
 
-            {/* Meta & Actions */}
-            <div className="mt-4 flex flex-col items-center justify-between gap-6 border-t border-outline-variant pt-8 sm:flex-row">
-              <div className="flex items-center space-x-2 text-on-surface-variant">
-                <span className="material-symbols-outlined text-sm">history</span>
-                <span className="text-[12px]">Last edited: Just now by Admin</span>
-              </div>
-              <div className="flex w-full items-center space-x-4 sm:w-auto">
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={isSubmitting}
-                  onClick={() => router.push("/chapters")}
-                  className="flex-1 rounded-lg border border-outline px-8 py-3 font-bold text-primary transition-all active:scale-95 hover:bg-surface-container-low sm:flex-none cursor-pointer h-auto normal-case tracking-normal disabled:opacity-50"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="flex flex-1 items-center justify-center space-x-2 rounded-lg bg-primary-container px-10 py-3 font-bold text-on-primary-container shadow-md transition-all active:scale-95 hover:bg-primary hover:text-white disabled:opacity-50 sm:flex-none cursor-pointer h-auto normal-case tracking-normal"
-                >
-                  {isSubmitting ? (
-                    <span className="material-symbols-outlined animate-spin text-[20px]">
-                      progress_activity
-                    </span>
-                  ) : (
-                    <span className="material-symbols-outlined text-[20px]">save</span>
-                  )}
-                  <span>{isSubmitting ? "Saving..." : "Save Chapter"}</span>
-                </Button>
-              </div>
+            {/* Actions */}
+            <div className="mt-4 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3 sm:gap-4 border-t border-outline-variant pt-6 sm:pt-8">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isSubmitting}
+                onClick={() => router.push("/chapters")}
+                className="w-full sm:w-auto rounded-lg border border-outline-variant px-6 sm:px-8 py-2.5 sm:py-3 font-bold text-primary transition-all active:scale-95 hover:bg-surface-container-low cursor-pointer h-auto normal-case tracking-normal disabled:opacity-50 text-sm"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="flex w-full sm:w-auto items-center justify-center space-x-2 rounded-lg bg-primary-container px-8 sm:px-10 py-2.5 sm:py-3 font-bold text-on-primary-container shadow-md transition-all active:scale-95 hover:bg-primary hover:text-white disabled:opacity-50 cursor-pointer h-auto normal-case tracking-normal text-sm"
+              >
+                {isSubmitting ? (
+                  <span className="material-symbols-outlined animate-spin text-[18px] sm:text-[20px]">
+                    progress_activity
+                  </span>
+                ) : (
+                  <span className="material-symbols-outlined text-[18px] sm:text-[20px]">save</span>
+                )}
+                <span>{isSubmitting ? "Creating..." : "Create Chapter"}</span>
+              </Button>
             </div>
           </form>
         </CardContent>

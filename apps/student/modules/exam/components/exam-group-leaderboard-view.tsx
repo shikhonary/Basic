@@ -385,7 +385,6 @@ export function ExamGroupLeaderboardView({ groupId }: ExamGroupLeaderboardViewPr
 
                     {/* Avatar */}
                     <Avatar className="h-11 w-11 border border-outline-variant/40 shrink-0">
-                      <AvatarImage src={item.student.image || ""} alt={item.student.name} />
                       <AvatarFallback className="bg-primary/10 text-primary font-bold text-sm">
                         {item.student.name ? item.student.name.charAt(0) : "শ"}
                       </AvatarFallback>
@@ -405,19 +404,9 @@ export function ExamGroupLeaderboardView({ groupId }: ExamGroupLeaderboardViewPr
                       </div>
 
                       <div className="flex flex-wrap items-center gap-2 text-xs text-on-surface-variant">
-                        {item.student.roll && (
+                        {item.student.roll !== undefined && item.student.roll !== null && (
                           <span className="inline-flex items-center rounded-md bg-surface-container px-2 py-0.5 text-[11px] font-medium text-on-surface-variant border border-outline-variant/20">
                             রোল: {item.student.roll}
-                          </span>
-                        )}
-                        {!item.student.roll && item.student.studentId && (
-                          <span className="inline-flex items-center rounded-md bg-surface-container px-2 py-0.5 text-[11px] font-mono text-on-surface-variant border border-outline-variant/20">
-                            ID: {item.student.studentId}
-                          </span>
-                        )}
-                        {item.student.section && (
-                          <span className="inline-flex items-center rounded-md bg-surface-container px-2 py-0.5 text-[11px] text-on-surface-variant border border-outline-variant/20">
-                            সেকশন: {item.student.section}
                           </span>
                         )}
                       </div>

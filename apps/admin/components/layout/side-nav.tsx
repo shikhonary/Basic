@@ -10,31 +10,45 @@ import {
   BookOpen,
   Layers,
   Users,
-  Calendar,
   ClipboardList,
-  BarChart3,
-  CreditCard,
   Settings,
   LogOut,
   HelpCircle,
   ChevronLeft,
   ChevronRight,
-  Library,
+  Shield,
 } from "lucide-react"
 
-const navItems = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/academic-classes", label: "Classes", icon: GraduationCap },
-  { href: "/subjects", label: "Subjects", icon: BookOpen },
-  { href: "/chapters", label: "Chapters", icon: Layers },
-  { href: "/mcqs", label: "MCQs", icon: HelpCircle },
-  { href: "/users", label: "Users", icon: Users },
-  { href: "/schedule", label: "Batch Schedule", icon: Calendar },
-  { href: "/exams", label: "Exams", icon: ClipboardList },
-  { href: "/exam-groups", label: "Exam Groups", icon: Layers },
-  { href: "/question-bank", label: "Question Bank", icon: Library },
-  { href: "/reports", label: "Progress Reports", icon: BarChart3 },
-  { href: "/fees", label: "Fees", icon: CreditCard },
+const navGroups = [
+  {
+    title: "Overview",
+    items: [
+      { href: "/", label: "Dashboard", icon: LayoutDashboard },
+    ],
+  },
+  {
+    title: "Academic Setup",
+    items: [
+      { href: "/academic-classes", label: "Classes", icon: GraduationCap },
+      { href: "/subjects", label: "Subjects", icon: BookOpen },
+      { href: "/chapters", label: "Chapters", icon: Layers },
+      { href: "/mcqs", label: "MCQs", icon: HelpCircle },
+    ],
+  },
+  {
+    title: "Exams & Grading",
+    items: [
+      { href: "/exams", label: "Exams", icon: ClipboardList },
+      { href: "/exam-groups", label: "Exam Groups", icon: Layers },
+    ],
+  },
+  {
+    title: "Administration",
+    items: [
+      { href: "/users", label: "Users", icon: Users },
+      { href: "/roles", label: "Roles", icon: Shield },
+    ],
+  },
 ]
 
 interface SideNavProps {
@@ -102,32 +116,46 @@ export function SideNav({ isCollapsed = false, onToggle }: SideNavProps) {
 
       {/* Navigation Tabs */}
       <nav className="mt-4 flex-1 overflow-y-auto overflow-x-hidden">
-        <div className="flex flex-col gap-1 px-2">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href
-            const Icon = item.icon
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                title={isCollapsed ? item.label : undefined}
-                className={`group flex items-center gap-4 rounded-xl transition-all duration-200 ${
-                  isCollapsed ? "justify-center p-3" : "px-4 py-3"
-                } ${
-                  isActive
-                    ? "sidebar-item-active font-bold text-primary bg-primary/10 border-l-4 border-primary"
-                    : "text-on-surface-variant hover:bg-surface-container-high"
-                }`}
-              >
-                <Icon className="h-5 w-5 shrink-0" />
-                {!isCollapsed && (
-                  <span className="font-label-sm text-xs uppercase tracking-wider whitespace-nowrap overflow-hidden text-ellipsis">
-                    {item.label}
-                  </span>
-                )}
-              </Link>
-            )
-          })}
+        <div className="flex flex-col gap-4 px-2">
+          {navGroups.map((group, groupIdx) => (
+            <div key={group.title} className="flex flex-col gap-1">
+              {/* Group Header */}
+              {isCollapsed ? (
+                groupIdx > 0 && <div className="border-t border-outline-variant/30 my-2 mx-2" />
+              ) : (
+                <div className="font-label-sm text-[10px] text-outline/65 font-bold uppercase tracking-widest px-4 mt-2 mb-1">
+                  {group.title}
+                </div>
+              )}
+
+              {/* Items */}
+              {group.items.map((item) => {
+                const isActive = pathname === item.href
+                const Icon = item.icon
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    title={isCollapsed ? item.label : undefined}
+                    className={`group flex items-center gap-4 rounded-xl transition-all duration-200 ${
+                      isCollapsed ? "justify-center p-3" : "px-4 py-3"
+                    } ${
+                      isActive
+                        ? "sidebar-item-active font-bold text-primary bg-primary/10 border-l-4 border-primary"
+                        : "text-on-surface-variant hover:bg-surface-container-high"
+                    }`}
+                  >
+                    <Icon className="h-5 w-5 shrink-0" />
+                    {!isCollapsed && (
+                      <span className="font-label-sm text-xs uppercase tracking-wider whitespace-nowrap overflow-hidden text-ellipsis">
+                        {item.label}
+                      </span>
+                    )}
+                  </Link>
+                )
+              })}
+            </div>
+          ))}
         </div>
       </nav>
 

@@ -18,6 +18,9 @@ import type {
   ToggleExamStatusInput,
   UpdateExamInput,
   UpdateExamSubjectMcqsInput,
+  McqsForAssignmentInput,
+  ExamAttemptsInput,
+  ExamLeaderboardInput,
 } from "./exam.schema"
 import { safeExamSelect } from "./exam.schema"
 
@@ -30,6 +33,7 @@ export async function listExams(db: PrismaClient, input: ListExamsInput) {
     ...(input.status ? { status: input.status } : {}),
     ...(input.type ? { type: input.type } : {}),
     ...(input.academicClassId ? { academicClassId: input.academicClassId } : {}),
+    ...(input.group ? { group: input.group } : {}),
     ...(input.examGroupId
       ? { examGroupItems: { some: { examGroupId: input.examGroupId } } }
       : {}),
@@ -409,3 +413,274 @@ export async function updateExamSubjectMcqs(
     select: safeExamSelect,
   })
 }
+
+export async function getMcqsForAssignment(
+  db: PrismaClient,
+  input: McqsForAssignmentInput,
+) {
+  const {
+    examId,
+    subjectId,
+    chapterId,
+    board,
+    query,
+    type,
+    assignedStatus,
+    sort,
+    limit = 50,
+    page = 1,
+  } = input
+
+  // Get assigned mcqIds
+  let assignedMcqIds: string[] = []
+  if (examId) {
+    const examSub = await db.examSubject.findFirst({
+      where: {
+        examId,
+        subjectId,
+      },
+      select: { mcqIds: true },
+    })
+    if (examSub) {
+      assignedMcqIds = examSub.mcqIds
+    }
+  }
+
+  const where = {
+    isActive: true,
+    subjectId,
+    ...(chapterId && chapterId !== "All" ? { chapterId } : {}),
+    ...(type && type !== "All" ? { type } : {}),
+    ...(board && board !== "All"
+      ? (() => {
+          const cleaned = board.replace(/\s+/g, "")
+          const match = cleaned.match(/^([^\.]+)\.([^\.]+)\.([০-৯0-9]+)$/)
+          if (match) {
+            const s1 = match[1]!
+            const s2 = match[2]!
+            const year = match[3]!
+            return {
+              reference: {
+                hasSome: [
+                  `${s1}.${s2}.${year}`,
+                  `${s1}. ${s2}.${year}`,
+                  `${s1}.${s2}. ${year}`,
+                  `${s1}. ${s2}. ${year}`,
+                ],
+              },
+            }
+          }
+          return {
+            reference: {
+              has: board,
+            },
+          }
+        })()
+      : {}),
+    ...(query
+      ? {
+          OR: [
+            { question: { contains: query, mode: "insensitive" as const } },
+            { explanation: { contains: query, mode: "insensitive" as const } },
+            { context: { contains: query, mode: "insensitive" as const } },
+            { reference: { hasSome: [query] } },
+          ],
+        }
+      : {}),
+    ...(assignedStatus === "assigned"
+      ? { id: { in: assignedMcqIds } }
+      : assignedStatus === "unassigned"
+      ? { id: { notIn: assignedMcqIds } }
+      : {}),
+  }
+
+  const skip = (page - 1) * limit
+
+  const [items, totalItems] = await Promise.all([
+    db.mcq.findMany({
+      where,
+      take: limit,
+      skip,
+      orderBy: sort === "newest" ? { createdAt: "desc" } : { createdAt: "asc" },
+      select: {
+        id: true,
+        question: true,
+        answer: true,
+        options: true,
+        statements: true,
+        type: true,
+        isMath: true,
+        reference: true,
+        explanation: true,
+        questionUrl: true,
+        context: true,
+        contextUrl: true,
+        subjectId: true,
+        chapterId: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+        subject: {
+          select: {
+            id: true,
+            name: true,
+            nameBn: true,
+            level: true,
+            group: true,
+          },
+        },
+        chapter: {
+          select: {
+            id: true,
+            name: true,
+            nameBn: true,
+            position: true,
+          },
+        },
+      },
+    }),
+    db.mcq.count({ where }),
+  ])
+
+  return {
+    items,
+    totalItems,
+    totalPages: Math.ceil(totalItems / limit) || 1,
+    page,
+    limit,
+  }
+}
+
+export async function listExamAttempts(
+  db: PrismaClient,
+  input: ExamAttemptsInput,
+) {
+  const page = input.page ?? 1
+  const limit = input.limit ?? 50
+  const skip = (page - 1) * limit
+
+  const where: any = {
+    examId: input.examId,
+  }
+
+  if (input.query) {
+    const trimmed = input.query.trim()
+    const isNum = /^\d+$/.test(trimmed)
+    if (isNum) {
+      where.student = {
+        roll: parseInt(trimmed, 10),
+      }
+    } else {
+      where.student = {
+        name: { contains: trimmed, mode: "insensitive" },
+      }
+    }
+  }
+
+  const [items, totalItems] = await Promise.all([
+    db.examAttempt.findMany({
+      where,
+      take: limit,
+      skip,
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        score: true,
+        correctAnswers: true,
+        wrongAnswers: true,
+        totalQuestions: true,
+        duration: true,
+        startTime: true,
+        endTime: true,
+        status: true,
+        tabSwitches: true,
+        warnings: true,
+        createdAt: true,
+        student: {
+          select: {
+            id: true,
+            name: true,
+            roll: true,
+          },
+        },
+      },
+    }),
+    db.examAttempt.count({ where }),
+  ])
+
+  return {
+    items,
+    totalItems,
+    totalPages: Math.ceil(totalItems / limit) || 1,
+    page,
+    limit,
+  }
+}
+
+export async function getExamLeaderboardForAdmin(
+  db: PrismaClient,
+  input: ExamLeaderboardInput,
+) {
+  const exam = await db.exam.findUnique({
+    where: { id: input.examId },
+    select: {
+      id: true,
+      title: true,
+      total: true,
+      duration: true,
+      totalMcq: true,
+    },
+  })
+
+  if (!exam) {
+    throw notFound("Exam not found.")
+  }
+
+  const attempts = await db.examAttempt.findMany({
+    where: {
+      examId: input.examId,
+      status: { in: ["Submitted", "Auto-Submitted"] },
+    },
+    select: {
+      id: true,
+      score: true,
+      correctAnswers: true,
+      wrongAnswers: true,
+      totalQuestions: true,
+      duration: true,
+      createdAt: true,
+      startTime: true,
+      endTime: true,
+      student: {
+        select: {
+          id: true,
+          userId: true,
+          name: true,
+          roll: true,
+        },
+      },
+    },
+    orderBy: [
+      { score: "desc" },
+      { duration: "asc" },
+      { createdAt: "asc" },
+    ],
+  })
+
+  return attempts.map((att, index) => ({
+    rank: index + 1,
+    id: att.id,
+    score: att.score ?? 0,
+    correctAnswers: att.correctAnswers ?? 0,
+    wrongAnswers: att.wrongAnswers ?? 0,
+    totalQuestions: att.totalQuestions ?? 0,
+    duration: att.duration,
+    createdAt: att.createdAt,
+    student: {
+      id: att.student.id,
+      name: att.student.name || "Student",
+      roll: att.student.roll,
+    },
+  }))
+}
+

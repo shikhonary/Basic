@@ -33,7 +33,7 @@ import { safeAnswerHistorySelect, safeAttemptSelect } from "./exam-attempt.schem
 async function resolveStudent(db: PrismaClient, userId: string) {
   const student = await db.student.findUnique({
     where: { userId },
-    select: { id: true, academicClassId: true },
+    select: { id: true, academicClassId: true, group: true },
   })
 
   if (!student) {
@@ -142,16 +142,33 @@ export async function listAvailableExams(
   // Safely look up student profile (does not hard-fail if profile is pending creation)
   const student = await db.student.findUnique({
     where: { userId },
-    select: { id: true, academicClassId: true },
+    select: { id: true, academicClassId: true, group: true },
   })
 
   // Prioritize explicit academicClassId from input, fallback to student's academicClassId if available
   const targetClassId = input.academicClassId || student?.academicClassId
+  const studentGroup = student?.group?.trim()
   const now = new Date()
 
   const where: any = {
     ...(targetClassId ? { academicClassId: targetClassId } : {}),
     status: EXAM_STATUS.PUBLISHED,
+    AND: [
+      {
+        OR: [
+          { group: null },
+          { group: "" },
+          ...(studentGroup ? [{ group: studentGroup }] : []),
+        ],
+      },
+      ...(input.query
+        ? [
+            {
+              title: { contains: input.query, mode: "insensitive" as const },
+            },
+          ]
+        : []),
+    ],
     ...(input.activeOnly
       ? {
           startDate: { lte: now },
@@ -159,13 +176,6 @@ export async function listAvailableExams(
         }
       : {}),
     ...(input.type ? { type: input.type } : {}),
-    ...(input.query
-      ? {
-          OR: [
-            { title: { contains: input.query, mode: "insensitive" as const } },
-          ],
-        }
-      : {}),
   }
 
   const page = input.page ?? 1
@@ -187,6 +197,7 @@ export async function listAvailableExams(
         startDate: true,
         endDate: true,
         type: true,
+        group: true,
         status: true,
         hasNegativeMark: true,
         negativeMark: true,
@@ -302,6 +313,7 @@ export async function getExamForAttempt(
       hasNegativeMark: true,
       negativeMark: true,
       type: true,
+      group: true,
       status: true,
       academicClassId: true,
       examSubjects: {
@@ -321,6 +333,11 @@ export async function getExamForAttempt(
 
   if (student.academicClassId && exam.academicClassId !== student.academicClassId) {
     throw forbidden("This exam is not assigned to your class.")
+  }
+
+  const examGroup = exam.group?.trim()
+  if (examGroup && examGroup !== student.group?.trim()) {
+    throw forbidden("This exam is not assigned to your group.")
   }
 
   // Check for existing in-progress or not-started attempt
@@ -505,6 +522,7 @@ export async function createAttempt(
       totalMcq: true,
       total: true,
       type: true,
+      group: true,
       hasNegativeMark: true,
       negativeMark: true,
       hasSuffle: true,
@@ -521,6 +539,11 @@ export async function createAttempt(
 
   if (student.academicClassId && exam.academicClassId !== student.academicClassId) {
     throw forbidden("This exam is not assigned to your class.")
+  }
+
+  const examGroup = exam.group?.trim()
+  if (examGroup && examGroup !== student.group?.trim()) {
+    throw forbidden("This exam is not assigned to your group.")
   }
 
   const now = new Date()
@@ -917,10 +940,7 @@ export async function getExamLeaderboard(
           id: true,
           userId: true,
           name: true,
-          nameBn: true,
-          imageUrl: true,
           roll: true,
-          studentId: true,
         },
       },
     },
@@ -948,10 +968,8 @@ export async function getExamLeaderboard(
     createdAt: att.createdAt,
     student: {
       id: att.student.id,
-      name: att.student.name || att.student.nameBn || "শিক্ষার্থী",
-      image: att.student.imageUrl,
+      name: att.student.name || "শিক্ষার্থী",
       roll: att.student.roll,
-      studentId: att.student.studentId,
     },
     isCurrentUser: student ? att.student.id === student.id : false,
   }))

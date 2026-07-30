@@ -1,96 +1,148 @@
 "use client"
 
 import type { UserStats } from "../types"
-import { Card, CardContent } from "@workspace/ui/components/card"
+import { Badge } from "@workspace/ui/components/badge"
 import { Progress, ProgressIndicator, ProgressTrack } from "@workspace/ui/components/progress"
+import { Skeleton } from "@workspace/ui/components/skeleton"
+import { Users, GraduationCap, Clock, CheckCircle2 } from "lucide-react"
 
 interface UserStatsCardsProps {
-  stats: UserStats
+  stats?: UserStats
+  isLoading?: boolean
 }
 
-export function UserStatsCards({ stats }: UserStatsCardsProps) {
+export function UserStatsCards({ stats, isLoading = false }: UserStatsCardsProps) {
+  if (isLoading) {
+    return (
+      <div className="mb-6">
+        {/* Mobile skeleton */}
+        <div className="flex flex-wrap gap-2 sm:hidden">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-7 w-20 rounded-md bg-surface-container-high" />
+          ))}
+        </div>
+        {/* Grid skeleton */}
+        <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-24 w-full rounded-xl bg-surface-container-high" />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  const activeStats = stats ?? {
+    totalUsers: 0,
+    totalUsersChange: "+0%",
+    verifiedTeachers: 0,
+    pendingRequests: 0,
+    systemHealth: 100,
+  }
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-10">
-      {/* Total Users */}
-      <Card className="bg-surface-container-low p-6 rounded-2xl border border-outline-variant/30 shadow-xs">
-        <CardContent className="p-0">
-          <p className="font-label-sm text-label-sm uppercase tracking-widest text-outline mb-1 font-semibold">
-            Total Users
-          </p>
-          <div className="flex items-end gap-2">
-            <span className="font-headline text-[32px] font-bold text-on-surface leading-none">
-              {stats.totalUsers.toLocaleString()}
-            </span>
-            <span className="font-body-md text-emerald-600 text-[14px] mb-1 flex items-center font-medium">
-              {stats.totalUsersChange}{" "}
-              <span
-                className="material-symbols-outlined text-[16px] ml-0.5"
-                data-icon="trending_up"
-              >
-                trending_up
+    <div className="mb-6">
+      {/* Mobile View (< sm): Direct Badges */}
+      <div className="flex flex-wrap items-center gap-2 sm:hidden">
+        <Badge variant="outline" className="rounded-md border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-bold text-primary normal-case tracking-normal">
+          Total Users: {activeStats.totalUsers ?? 0}
+        </Badge>
+        <Badge variant="outline" className="rounded-md border-secondary/20 bg-secondary/10 px-3 py-1.5 text-xs font-bold text-secondary normal-case tracking-normal">
+          Faculty: {activeStats.verifiedTeachers ?? 0}
+        </Badge>
+        <Badge variant="outline" className="rounded-md border-amber-500/20 bg-amber-500/10 px-3 py-1.5 text-xs font-bold text-amber-600 normal-case tracking-normal">
+          Pending: {activeStats.pendingRequests ?? 0}
+        </Badge>
+        <Badge variant="outline" className="rounded-md border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-xs font-bold text-emerald-600 normal-case tracking-normal">
+          Health: {activeStats.systemHealth ?? 0}%
+        </Badge>
+      </div>
+
+      {/* Desktop & Tablet View (>= sm): Full Cards */}
+      <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        {/* Total Users */}
+        <div className="flex items-center gap-4 rounded-xl border border-outline-variant/30 bg-surface-container-low p-4 transition-all hover:shadow-sm">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">
+            <Users className="h-6 w-6" />
+          </div>
+          <div>
+            <p className="font-label-sm text-xs font-medium uppercase tracking-wider text-outline">
+              Total Users
+            </p>
+            <h3 className="font-headline-md text-2xl font-bold text-on-surface">
+              {activeStats.totalUsers ?? 0}
+            </h3>
+            <p className="mt-0.5 text-xs text-outline">
+              All Portal Users
+            </p>
+          </div>
+        </div>
+
+        {/* Verified Teachers */}
+        <div className="flex items-center gap-4 rounded-xl border border-outline-variant/30 bg-surface-container-low p-4 transition-all hover:shadow-sm">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-secondary/10 text-secondary shrink-0">
+            <GraduationCap className="h-6 w-6" />
+          </div>
+          <div>
+            <p className="font-label-sm text-xs font-medium uppercase tracking-wider text-outline">
+              Faculty / Teachers
+            </p>
+            <h3 className="font-headline-md text-2xl font-bold text-secondary">
+              {activeStats.verifiedTeachers ?? 0}
+            </h3>
+            <p className="mt-0.5 text-xs text-outline">
+              Verified Teachers
+            </p>
+          </div>
+        </div>
+
+        {/* Pending Requests */}
+        <div className="flex items-center gap-4 rounded-xl border border-outline-variant/30 bg-surface-container-low p-4 transition-all hover:shadow-sm">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 shrink-0">
+            <Clock className="h-6 w-6" />
+          </div>
+          <div>
+            <p className="font-label-sm text-xs font-medium uppercase tracking-wider text-outline">
+              Pending Requests
+            </p>
+            <h3 className="font-headline-md text-2xl font-bold text-amber-600">
+              {activeStats.pendingRequests ?? 0}
+            </h3>
+            <p className="mt-0.5 text-xs text-outline">
+              Verification Needed
+            </p>
+          </div>
+        </div>
+
+        {/* System Health */}
+        <div className="flex items-center gap-4 rounded-xl border border-outline-variant/30 bg-surface-container-low p-4 transition-all hover:shadow-sm">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 shrink-0">
+            <CheckCircle2 className="h-6 w-6" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-label-sm text-xs font-medium uppercase tracking-wider text-outline">
+              System Health
+            </p>
+            <div className="flex items-center gap-2 mt-1.5">
+              <div className="h-2 flex-1 bg-surface-container-highest rounded-full overflow-hidden">
+                <Progress value={activeStats.systemHealth} className="h-full w-full bg-transparent gap-0">
+                  <ProgressTrack className="h-full w-full bg-surface-container-highest rounded-full">
+                    <ProgressIndicator
+                      className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                      style={{ width: `${activeStats.systemHealth}%` }}
+                    />
+                  </ProgressTrack>
+                </Progress>
+              </div>
+              <span className="font-body-md text-on-surface font-semibold text-xs shrink-0">
+                {activeStats.systemHealth}%
               </span>
-            </span>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Verified Teachers */}
-      <Card className="bg-surface-container-low p-6 rounded-2xl border border-outline-variant/30 shadow-xs">
-        <CardContent className="p-0">
-          <p className="font-label-sm text-label-sm uppercase tracking-widest text-outline mb-1 font-semibold">
-            Verified Teachers
-          </p>
-          <div className="flex items-end gap-2">
-            <span className="font-headline text-[32px] font-bold text-on-surface leading-none">
-              {stats.verifiedTeachers}
-            </span>
-            <span className="font-body-md text-outline text-[14px] mb-1 font-medium">
-              Faculty
-            </span>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Pending Requests */}
-      <Card className="bg-surface-container-low p-6 rounded-2xl border border-outline-variant/30 shadow-xs">
-        <CardContent className="p-0">
-          <p className="font-label-sm text-label-sm uppercase tracking-widest text-outline mb-1 font-semibold">
-            Pending Requests
-          </p>
-          <div className="flex items-end gap-2">
-            <span className="font-headline text-[32px] font-bold text-amber-600 leading-none">
-              {stats.pendingRequests}
-            </span>
-            <span className="font-body-md text-outline text-[14px] mb-1 font-medium">
-              Action needed
-            </span>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* System Health */}
-      <Card className="bg-surface-container-low p-6 rounded-2xl border border-outline-variant/30 shadow-xs">
-        <CardContent className="p-0">
-          <p className="font-label-sm text-label-sm uppercase tracking-widest text-outline mb-1 font-semibold">
-            System Health
-          </p>
-          <div className="flex items-center gap-2 mt-2">
-            <div className="h-2 flex-1 bg-surface-container-highest rounded-full overflow-hidden">
-              <Progress value={stats.systemHealth} className="h-full w-full bg-transparent gap-0">
-                <ProgressTrack className="h-full w-full bg-surface-container-highest rounded-full">
-                  <ProgressIndicator
-                    className="h-full bg-emerald-500 rounded-full transition-all duration-500"
-                    style={{ width: `${stats.systemHealth}%` }}
-                  />
-                </ProgressTrack>
-              </Progress>
             </div>
-            <span className="font-body-md text-on-surface font-semibold text-[14px]">
-              {stats.systemHealth}%
-            </span>
+            <p className="mt-0.5 text-[10px] text-outline">
+              Operational
+            </p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }

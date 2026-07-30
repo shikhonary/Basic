@@ -1,21 +1,23 @@
 "use client"
 
-import { useMemo, useState } from "react"
-import { MOCK_USERS, MOCK_USER_STATS } from "../data/mock-users"
+import { useMemo } from "react"
+import { useRouter } from "next/navigation"
 import type { User, UserFilterState } from "../types"
 import { useUserSearchParams, type UserSortOption } from "../hooks/use-user-search-params"
+import { useUsersList, useDeleteUser, useUserStats } from "../services/use-user"
 import { UserPageHeader } from "./user-page-header"
 import { UserFilterBar } from "./user-filter-bar"
 import { UserDataTable } from "./user-data-table"
-import { UserPagination } from "./user-pagination"
 import { UserStatsCards } from "./user-stats-cards"
-import { Card } from "@workspace/ui/components/card"
-
-const ITEMS_PER_PAGE = 4
+import { ChangeRoleModal } from "./change-role-modal"
+import { DeleteUserModal } from "./delete-user-modal"
+import { useChangeRoleModalStore } from "../store/use-change-role-modal-store"
+import { useDeleteUserModalStore } from "../store/use-delete-user-modal-store"
+import { toast } from "@workspace/ui/components/sonner"
 
 export function UserManagementView() {
-  const [users, setUsers] = useState<User[]>(MOCK_USERS)
-  const [{ search, role, status, sort, page: currentPage }, setSearchParams] = useUserSearchParams()
+  const router = useRouter()
+  const [{ search, role, status, sort, page: currentPage, limit }, setSearchParams] = useUserSearchParams()
 
   const filters: UserFilterState = useMemo(
     () => ({
@@ -26,6 +28,20 @@ export function UserManagementView() {
     }),
     [search, role, status, sort]
   )
+
+  // Fetch users list from backend using trpc query hook
+  const { data, isLoading, isError } = useUsersList({
+    limit,
+    page: currentPage,
+    query: search || undefined,
+    role: role || undefined,
+    status: status || undefined,
+  })
+
+  // Fetch dashboard stats from backend
+  const { data: statsData, isLoading: isStatsLoading } = useUserStats()
+
+  const deleteMutation = useDeleteUser()
 
   const handleFilterChange = (newFilters: Partial<UserFilterState>) => {
     setSearchParams({
@@ -47,88 +63,81 @@ export function UserManagementView() {
     })
   }
 
-  // Filtered and sorted users calculation
-  const filteredUsers = useMemo(() => {
-    const result = users.filter((user) => {
-      // Search filter (name, email, id)
-      const matchesSearch =
-        filters.search === "" ||
-        user.name.toLowerCase().includes(filters.search.toLowerCase()) ||
-        user.email.toLowerCase().includes(filters.search.toLowerCase()) ||
-        user.id.toLowerCase().includes(filters.search.toLowerCase())
+  // Map backend users payload to User UI structure
+  const mappedUsers = useMemo(() => {
+    if (!data?.users) return []
+    return data.users.map((u: any): User => {
+      // Resolve role
+      const roleName = u.roles?.[0]?.name ?? "STUDENT"
+      let formattedRole: User["role"] = "Student"
+      if (roleName === "SUPER_ADMIN" || roleName === "ADMIN") {
+        formattedRole = "Admin"
+      } else if (roleName === "TEACHER") {
+        formattedRole = "Teacher"
+      } else if (roleName === "PARENT") {
+        formattedRole = "Parent"
+      }
 
-      // Role filter
-      const matchesRole = filters.role === "All" || user.role === filters.role
+      // Resolve status
+      const verificationStatus: User["status"] =
+        (u.emailVerified || u.phoneNumberVerified) ? "Verified" : "Pending"
 
-      // Status filter
-      const matchesStatus = filters.status === "All" || user.status === filters.status
-
-      return matchesSearch && matchesRole && matchesStatus
+      return {
+        id: u.id,
+        name: u.name || "N/A",
+        email: u.email,
+        role: formattedRole,
+        status: verificationStatus,
+        joinedDate: new Date(u.createdAt).toLocaleDateString("en-US", {
+          month: "short",
+          day: "2-digit",
+          year: "numeric",
+        }),
+        avatarUrl: u.image || undefined,
+        initials: u.name
+          ? u.name
+              .split(" ")
+              .map((n: string) => n[0])
+              .join("")
+              .toUpperCase()
+              .slice(0, 2)
+          : "US",
+        avatarBgColor: "bg-primary-fixed",
+        avatarTextColor: "text-primary",
+        roleIds: u.roles?.map((r: any) => r.id) || [],
+      }
     })
+  }, [data?.users])
 
-    // Sort filtering logic matching SORT_OPTIONS values (desc = Newest, asc = Oldest)
-    switch (filters.sort) {
-      case "asc":
-      case "oldest":
-        return [...result].sort(
-          (a, b) => new Date(a.joinedDate).getTime() - new Date(b.joinedDate).getTime()
-        )
-      case "name_asc":
-        return [...result].sort((a, b) => a.name.localeCompare(b.name))
-      case "name_desc":
-        return [...result].sort((a, b) => b.name.localeCompare(a.name))
-      case "desc":
-      case "newest":
-      default:
-        return [...result].sort(
-          (a, b) => new Date(b.joinedDate).getTime() - new Date(a.joinedDate).getTime()
-        )
-    }
-  }, [users, filters])
+  const totalPages = data?.totalPages ?? 1
+  const totalItems = data?.totalItems ?? 0
 
-  // Pagination calculation
-  const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE) || 1
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
-  const paginatedUsers = filteredUsers.slice(startIndex, startIndex + ITEMS_PER_PAGE)
+  const openDeleteModal = useDeleteUserModalStore((state) => state.openModal)
+  const openChangeRoleModal = useChangeRoleModalStore((state) => state.openModal)
 
   const handleAddUser = () => {
-    const newUser: User = {
-      id: `usr_${Date.now()}`,
-      name: "New Team Member",
-      email: "new.member@bec-edu.org",
-      role: "Teacher",
-      status: "Pending",
-      joinedDate: new Date().toLocaleDateString("en-US", {
-        month: "short",
-        day: "2-digit",
-        year: "numeric",
-      }),
-      initials: "NM",
-      avatarBgColor: "bg-primary-fixed",
-      avatarTextColor: "text-primary",
-    }
-    setUsers((prev) => [newUser, ...prev])
+    router.push("/users/create")
   }
 
   const handleEditUser = (user: User) => {
-    const updatedName = prompt("Edit User Name:", user.name)
-    if (updatedName && updatedName.trim() !== "") {
-      setUsers((prev) =>
-        prev.map((u) => (u.id === user.id ? { ...u, name: updatedName.trim() } : u))
-      )
-    }
+    router.push(`/users/${user.id}/edit`)
   }
 
   const handleDeleteUser = (user: User) => {
-    if (confirm(`Are you sure you want to remove ${user.name}?`)) {
-      setUsers((prev) => prev.filter((u) => u.id !== user.id))
-    }
+    openDeleteModal(user.id, user.name)
+  }
+
+  const handleManageRoles = (user: User) => {
+    openChangeRoleModal(user.id, user.name, user.roleIds || [])
   }
 
   return (
     <div className="w-full">
       {/* Page Header */}
       <UserPageHeader onAddUser={handleAddUser} />
+
+      {/* Contextual Stats Cards */}
+      <UserStatsCards stats={statsData} isLoading={isStatsLoading} />
 
       {/* Filter Bar */}
       <UserFilterBar
@@ -138,24 +147,25 @@ export function UserManagementView() {
       />
 
       {/* Data Table with Pagination */}
-      <Card className="bg-surface-container-lowest border border-outline-variant rounded-2xl overflow-hidden shadow-xs gap-0 p-0">
-        <UserDataTable
-          users={paginatedUsers}
-          onEditUser={handleEditUser}
-          onDeleteUser={handleDeleteUser}
-        />
-        <UserPagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          startIndex={filteredUsers.length > 0 ? startIndex + 1 : 0}
-          endIndex={Math.min(startIndex + ITEMS_PER_PAGE, filteredUsers.length)}
-          totalItems={filteredUsers.length}
-          onPageChange={(page) => setSearchParams({ page })}
-        />
-      </Card>
+      <UserDataTable
+        users={mappedUsers}
+        isLoading={isLoading}
+        isError={isError}
+        isDeleting={deleteMutation.isPending}
+        onEditUser={handleEditUser}
+        onDeleteUser={handleDeleteUser}
+        onManageRoles={handleManageRoles}
+        currentPage={currentPage}
+        itemsPerPage={limit}
+        totalItems={totalItems}
+        totalPages={totalPages}
+        onPageChange={(page) => setSearchParams({ page })}
+        onLimitChange={(newLimit) => setSearchParams({ limit: newLimit, page: 1 })}
+      />
 
-      {/* Contextual Stats Cards */}
-      <UserStatsCards stats={MOCK_USER_STATS} />
+      {/* Change Role & Delete User Modals */}
+      <ChangeRoleModal />
+      <DeleteUserModal />
     </div>
   )
 }

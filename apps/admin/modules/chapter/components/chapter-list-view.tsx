@@ -34,7 +34,7 @@ export function ChapterListView() {
   })
 
   // Query chapter stats
-  const { data: statsData } = useChapterStats(
+  const { data: statsData, isLoading: isStatsLoading } = useChapterStats(
     selectedSubjectId !== "All" ? { subjectId: selectedSubjectId } : undefined
   )
 
@@ -52,8 +52,9 @@ export function ChapterListView() {
 
       {/* Stats Cards */}
       <ChapterStatsCards
-        totalChaptersCount={statsData.totalChaptersCount}
-        activeSubjectsCount={statsData.activeSubjectsCount}
+        totalChaptersCount={statsData?.totalChaptersCount ?? 0}
+        activeSubjectsCount={statsData?.activeSubjectsCount ?? 0}
+        isLoading={isStatsLoading}
       />
 
       {/* Filters */}
@@ -65,8 +66,7 @@ export function ChapterListView() {
         subjects={subjects}
         selectedSort={selectedSort}
         onSortChange={(sort) => setSearchParams({ sort: sort as any, page: 1 })}
-        selectedLimit={limit}
-        onLimitChange={(newLimit) => setSearchParams({ limit: newLimit, page: 1 })}
+        onResetAll={() => setSearchParams({ query: "", subjectId: "All", sort: "All", page: 1 })}
       />
 
       {/* Data Table */}
@@ -80,6 +80,7 @@ export function ChapterListView() {
         totalItems={totalItems}
         totalPages={totalPages}
         onPageChange={(page) => setSearchParams({ page })}
+        onLimitChange={(newLimit) => setSearchParams({ limit: newLimit, page: 1 })}
       />
 
       {/* Confirm Delete Modal */}

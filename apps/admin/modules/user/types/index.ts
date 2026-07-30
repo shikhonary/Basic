@@ -13,6 +13,7 @@ export interface User {
   initials?: string
   avatarBgColor?: string
   avatarTextColor?: string
+  roleIds?: string[]
 }
 
 export interface UserStats {

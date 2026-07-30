@@ -9,6 +9,7 @@ export const userSearchParamsParsers = {
   status: parseAsString.withDefault("All"),
   sort: parseAsStringEnum<UserSortOption>(Array.from(userSortEnum)).withDefault("desc"),
   page: parseAsInteger.withDefault(1),
+  limit: parseAsInteger.withDefault(10),
 }
 
 export function useUserSearchParams() {

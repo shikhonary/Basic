@@ -4,7 +4,7 @@ import React, { useState, useRef } from "react"
 import { Camera, Loader2, User, Check, AlertCircle } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@workspace/ui/components/avatar"
 import { useUploadThing } from "@/lib/uploadthing"
-import { useUpdateStudentProfile } from "../services/use-profile"
+import { useUpdateUser } from "@/modules/user/services/use-user"
 import { useCurrentUser } from "@/modules/user/services/use-user"
 
 interface ProfileImageUploaderProps {
@@ -19,7 +19,7 @@ export function ProfileImageUploader({
   size = "lg",
 }: ProfileImageUploaderProps) {
   const { user, refetch } = useCurrentUser()
-  const updateProfileMutation = useUpdateStudentProfile()
+  const updateUserMutation = useUpdateUser()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [uploadError, setUploadError] = useState<string | null>(null)
@@ -30,7 +30,8 @@ export function ProfileImageUploader({
       if (res && res[0]) {
         const uploadedUrl = res[0].ufsUrl || res[0].url
         try {
-          await updateProfileMutation.mutateAsync({ imageUrl: uploadedUrl })
+          if (!user?.id) throw new Error("User ID is missing")
+          await updateUserMutation.mutateAsync({ id: user.id, image: uploadedUrl })
           await refetch()
           setUploadSuccess(true)
           setTimeout(() => setUploadSuccess(false), 3000)

@@ -25,8 +25,10 @@ export const listMcqsSchema = paginationSchema.extend({
   type: z.string().optional(),
   isMath: z.boolean().optional(),
   isActive: z.boolean().optional(),
+  board: z.string().optional(),
   query: z.string().optional(),
   sort: mcqSortEnum.optional(),
+  ids: z.array(z.string()).optional(),
   page: z.number().int().min(1).optional(),
 })
 

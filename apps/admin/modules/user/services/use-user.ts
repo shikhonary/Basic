@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { trpc } from "@/trpc/client"
 import { authClient } from "@workspace/auth/client"
-import type { ListUsersInput, RoleForSelectionInput } from "@workspace/api"
+import type { ListUsersInput, RoleForSelectionInput, CreateUserInput } from "@workspace/api"
 
 /**
  * Hook to get the currently authenticated user's session and assigned roles.
@@ -92,6 +92,20 @@ export function useDeleteUser() {
 }
 
 /**
+ * Hook to create a new user.
+ */
+export function useCreateUser() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    ...trpc.user.create.mutationOptions(),
+    onSuccess: () => {
+      queryClient.invalidateQueries(trpc.user.pathFilter())
+    },
+  })
+}
+
+/**
  * Hook to fetch roles for selection inputs (with optional name filter).
  */
 export function useRolesForSelection(input?: RoleForSelectionInput) {
@@ -100,4 +114,11 @@ export function useRolesForSelection(input?: RoleForSelectionInput) {
 
 /** Alias for useRolesForSelection */
 export const useRoleForSelection = useRolesForSelection
+
+/**
+ * Hook to get user management dashboard stats.
+ */
+export function useUserStats() {
+  return useQuery(trpc.user.stats.queryOptions())
+}
 

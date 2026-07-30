@@ -38,10 +38,10 @@ export function TopNav() {
   const { session, user, isVerified } = useCurrentUser()
   const { data: studentProfile } = useStudentProfile()
 
-  const displayName = studentProfile?.nameBn || studentProfile?.name || user?.name || "শিক্ষার্থী"
-  const studentId = studentProfile?.studentId ? `#${studentProfile.studentId}` : ""
+  const displayName = studentProfile?.name || user?.name || "শিক্ষার্থী"
+  const studentRoll = studentProfile?.roll ? `রোল: #${studentProfile.roll}` : ""
   const className = studentProfile?.academicClass?.nameBn || "স্টুডেন্ট পোর্টাল"
-  const userImage = studentProfile?.imageUrl || user?.image || ""
+  const userImage = user?.image || ""
 
   const initials = displayName
     .split(" ")
@@ -139,7 +139,7 @@ export function TopNav() {
                   {displayName}
                 </span>
                 <span className="text-[11px] text-on-surface-variant/80 font-medium truncate max-w-[140px]">
-                  {className} {studentId}
+                  {className} {studentRoll}
                 </span>
               </div>
 

@@ -12,7 +12,13 @@ import { idSchema, paginationSchema } from "../../schemas/common"
 // Queries
 // ---------------------------------------------------------------------------
 
-export const listUsersSchema = paginationSchema
+export const listUsersSchema = z.object({
+  limit: z.number().min(1).max(100).optional(),
+  page: z.number().min(1).optional(),
+  query: z.string().optional(),
+  role: z.string().optional(),
+  status: z.string().optional(),
+})
 
 export type ListUsersInput = z.infer<typeof listUsersSchema>
 
@@ -66,3 +72,14 @@ export const safeUserSelect = {
   createdAt: true,
   updatedAt: true,
 } as const
+
+export const createUserSchema = z.object({
+  email: z.string().email("Invalid email format").min(1, "Email is required"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  phoneNumber: z.string().optional(),
+  name: z.string().optional(),
+  roleIds: z.array(z.string()).min(1, "Select at least one role"),
+})
+
+export type CreateUserInput = z.infer<typeof createUserSchema>
+

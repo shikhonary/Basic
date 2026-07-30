@@ -20,28 +20,15 @@ import {
   SelectValue,
 } from "@workspace/ui/components/select"
 
-// Regex pattern matching Bengali characters, whitespace, dots, and hyphens (\u0980-\u09FF)
-const BENGALI_REGEX = /^[\u0980-\u09FF\s.\-]+$/
-
 // Regex pattern matching English characters, whitespace, dots, and hyphens
 const ENGLISH_REGEX = /^[A-Za-z\s.\-]+$/
 
 const onboardingSchema = z.object({
-  studentId: z
-    .string()
-    .min(1, "শিক্ষার্থী আইডি প্রদান করা আবশ্যক")
-    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
-      message: "সঠিক সংখ্যাবাচক শিক্ষার্থী আইডি দিন",
-    }),
   name: z
     .string()
     .min(1, "ইংরেজিতে নাম প্রদান করা আবশ্যক")
     .regex(ENGLISH_REGEX, "শুধুমাত্র ইংরেজি বর্ণমালা ব্যবহার করুন (e.g. Abdullah Al Mamun)"),
-  nameBn: z
-    .string()
-    .min(1, "বাংলায় নাম প্রদান করা আবশ্যক")
-    .regex(BENGALI_REGEX, "শুধুমাত্র বাংলা বর্ণমালা ব্যবহার করুন (যেমন: আব্দুল্লাহ আল মামুন)"),
-  mPhone: z
+  phone: z
     .string()
     .min(1, "মোবাইল নম্বর প্রদান করা আবশ্যক")
     .refine(
@@ -53,7 +40,12 @@ const onboardingSchema = z.object({
         message: "সঠিক ১০ বা ১১ ডিজিটের মোবাইল নম্বর দিন",
       }
     ),
+  institute: z.string().min(1, "শিক্ষা প্রতিষ্ঠানের নাম প্রদান করা আবশ্যক"),
   academicClassId: z.string().min(1, "শ্রেণি নির্বাচন করুন"),
+  roll: z.string().optional().refine((val) => !val || (!isNaN(Number(val)) && Number(val) > 0), {
+    message: "সঠিক রোল নম্বর দিন",
+  }),
+  group: z.string().optional(),
 })
 
 type OnboardingFormValues = z.infer<typeof onboardingSchema>
@@ -75,11 +67,12 @@ export function OnboardingForm() {
   } = useForm<OnboardingFormValues>({
     resolver: zodResolver(onboardingSchema),
     defaultValues: {
-      studentId: "",
       name: "",
-      nameBn: "",
-      mPhone: "",
+      phone: "",
+      institute: "",
       academicClassId: "",
+      roll: "",
+      group: "",
     },
   })
 
@@ -116,11 +109,12 @@ export function OnboardingForm() {
   const onSubmit = (data: OnboardingFormValues) => {
     setErrorMsg(null)
     completeMutation.mutate({
-      studentId: parseInt(data.studentId, 10),
       name: data.name.trim(),
-      nameBn: data.nameBn.trim(),
-      mPhone: data.mPhone.trim(),
+      phone: data.phone.trim(),
+      institute: data.institute.trim(),
       academicClassId: data.academicClassId,
+      roll: data.roll ? parseInt(data.roll, 10) : undefined,
+      group: data.group ? data.group.trim() : undefined,
     })
   }
 
@@ -130,7 +124,7 @@ export function OnboardingForm() {
         <div className="w-full max-w-xl">
           {/* Card Container */}
           <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-8 shadow-xs sm:p-10">
-            {/* Logo & Header like LoginPage */}
+            {/* Logo & Header */}
             <div className="flex flex-col items-center mb-10">
               <Image
                 alt="Basic Education Care Logo"
@@ -156,53 +150,91 @@ export function OnboardingForm() {
             )}
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              {/* 1. Academic Class (At the top) */}
-              <div className="space-y-2">
-                <Label className="block font-label-sm text-xs font-semibold tracking-wider text-on-surface-variant">
-                  শ্রেণি <span className="text-error">*</span>
-                </Label>
-                <Controller
-                  name="academicClassId"
-                  control={control}
-                  render={({ field }) => (
-                    <div className="group relative">
-                      <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors z-10 pointer-events-none">
-                        school
-                      </span>
-                      <Select
-                        disabled={isPending}
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      >
-                        <SelectTrigger className="w-full rounded-lg border border-outline-variant py-3 pl-10 pr-4 font-body-md text-on-surface transition-all bg-white focus:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:outline-hidden h-auto justify-between">
-                          <SelectValue placeholder="-- শ্রেণি নির্বাচন করুন --" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-white border border-outline-variant shadow-md rounded-lg">
-                          {academicClassesQuery.isLoading ? (
-                            <SelectItem value="" disabled>
-                              লোডিং হচ্ছে...
-                            </SelectItem>
-                          ) : (
-                            academicClassesQuery.data?.map((cls) => (
-                              <SelectItem key={cls.id} value={cls.id}>
-                                {cls.nameBn}
+              {/* 1. Academic Class & Group (Row of 2) */}
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label className="block font-label-sm text-xs font-semibold tracking-wider text-on-surface-variant">
+                    শ্রেণি <span className="text-error">*</span>
+                  </Label>
+                  <Controller
+                    name="academicClassId"
+                    control={control}
+                    render={({ field }) => (
+                      <div className="group relative">
+                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors z-10 pointer-events-none">
+                          school
+                        </span>
+                        <Select
+                          disabled={isPending}
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger className="w-full rounded-lg border border-outline-variant py-3 pl-10 pr-4 font-body-md text-on-surface transition-all bg-white focus:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:outline-hidden h-auto justify-between">
+                            <SelectValue placeholder="-- শ্রেণি নির্বাচন করুন --" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-white border border-outline-variant shadow-md rounded-lg">
+                            {academicClassesQuery.isLoading ? (
+                              <SelectItem value="" disabled>
+                                লোডিং হচ্ছে...
                               </SelectItem>
-                            ))
-                          )}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                            ) : (
+                              academicClassesQuery.data?.map((cls) => (
+                                <SelectItem key={cls.id} value={cls.id}>
+                                  {cls.nameBn}
+                                </SelectItem>
+                              ))
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                  />
+                  {errors.academicClassId && (
+                    <p className="text-xs text-error">
+                      {errors.academicClassId.message}
+                    </p>
                   )}
-                />
-                {errors.academicClassId && (
-                  <p className="text-xs text-error">
-                    {errors.academicClassId.message}
-                  </p>
-                )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="block font-label-sm text-xs font-semibold tracking-wider text-on-surface-variant">
+                    গ্রুপ (ঐচ্ছিক)
+                  </Label>
+                  <Controller
+                    name="group"
+                    control={control}
+                    render={({ field }) => (
+                      <div className="group relative">
+                        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors z-10 pointer-events-none">
+                          category
+                        </span>
+                        <Select
+                          disabled={isPending}
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger className="w-full rounded-lg border border-outline-variant py-3 pl-10 pr-4 font-body-md text-on-surface transition-all bg-white focus:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:outline-hidden h-auto justify-between">
+                            <SelectValue placeholder="-- গ্রুপ নির্বাচন করুন --" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-white border border-outline-variant shadow-md rounded-lg">
+                            <SelectItem value="Science">বিজ্ঞান</SelectItem>
+                            <SelectItem value="Commerce">ব্যবসায় শিক্ষা</SelectItem>
+                            <SelectItem value="Humanities">মানবিক</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                  />
+                  {errors.group && (
+                    <p className="text-xs text-error">
+                      {errors.group.message}
+                    </p>
+                  )}
+                </div>
               </div>
 
-              {/* 2. Name EN & Name BN (Row of 2) */}
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              {/* 2. Name & Institute */}
+              <div className="space-y-4">
                 <div className="space-y-2">
                   <Label className="block font-label-sm text-xs font-semibold tracking-wider text-on-surface-variant">
                     শিক্ষার্থীর নাম (ইংরেজিতে) <span className="text-error">*</span>
@@ -226,54 +258,32 @@ export function OnboardingForm() {
 
                 <div className="space-y-2">
                   <Label className="block font-label-sm text-xs font-semibold tracking-wider text-on-surface-variant">
-                    শিক্ষার্থীর নাম (বাংলায়) <span className="text-error">*</span>
+                    শিক্ষা প্রতিষ্ঠান (স্কুল/কলেজ) <span className="text-error">*</span>
                   </Label>
                   <div className="group relative">
                     <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors z-10">
-                      translate
+                      domain
                     </span>
                     <Input
                       type="text"
                       disabled={isPending}
-                      placeholder="বাংলায় সম্পূর্ণ নাম"
-                      {...register("nameBn")}
-                      className="w-full rounded-lg border border-outline-variant py-3 pl-10 pr-4 font-body-md font-bengali text-on-surface transition-all bg-white focus:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:outline-hidden h-auto"
+                      placeholder="শিক্ষা প্রতিষ্ঠানের নাম"
+                      {...register("institute")}
+                      className="w-full rounded-lg border border-outline-variant py-3 pl-10 pr-4 font-body-md text-on-surface transition-all bg-white focus:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:outline-hidden h-auto"
                     />
                   </div>
-                  {errors.nameBn && (
-                    <p className="text-xs text-error">{errors.nameBn.message}</p>
+                  {errors.institute && (
+                    <p className="text-xs text-error">{errors.institute.message}</p>
                   )}
                 </div>
               </div>
 
-              {/* 3. Student ID & Mother's Phone (Row of 2) */}
+              {/* 3. Phone & Roll (Row of 2) */}
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                {/* Student ID */}
+                {/* Phone */}
                 <div className="space-y-2">
                   <Label className="block font-label-sm text-xs font-semibold tracking-wider text-on-surface-variant">
-                    শিক্ষার্থী আইডি <span className="text-error">*</span>
-                  </Label>
-                  <div className="group relative">
-                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors z-10">
-                      badge
-                    </span>
-                    <Input
-                      type="number"
-                      disabled={isPending}
-                      placeholder="যেমন: ১০২৫০"
-                      {...register("studentId")}
-                      className="w-full rounded-lg border border-outline-variant py-3 pl-10 pr-4 font-body-md text-on-surface transition-all bg-white focus:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:outline-hidden h-auto"
-                    />
-                  </div>
-                  {errors.studentId && (
-                    <p className="text-xs text-error">{errors.studentId.message}</p>
-                  )}
-                </div>
-
-                {/* Mother's Phone */}
-                <div className="space-y-2">
-                  <Label className="block font-label-sm text-xs font-semibold tracking-wider text-on-surface-variant">
-                    গার্ডিয়ান মোবাইল নম্বর <span className="text-error">*</span>
+                    মোবাইল নম্বর <span className="text-error">*</span>
                   </Label>
                   <div className="group relative">
                     <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors z-10">
@@ -282,13 +292,35 @@ export function OnboardingForm() {
                     <Input
                       type="tel"
                       disabled={isPending}
-                      placeholder="1XXXXXXXXX"
-                      {...register("mPhone")}
+                      placeholder="017XXXXXXXX"
+                      {...register("phone")}
                       className="w-full rounded-lg border border-outline-variant py-3 pl-10 pr-4 font-body-md text-on-surface transition-all bg-white focus:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:outline-hidden h-auto"
                     />
                   </div>
-                  {errors.mPhone && (
-                    <p className="text-xs text-error">{errors.mPhone.message}</p>
+                  {errors.phone && (
+                    <p className="text-xs text-error">{errors.phone.message}</p>
+                  )}
+                </div>
+
+                {/* Roll */}
+                <div className="space-y-2">
+                  <Label className="block font-label-sm text-xs font-semibold tracking-wider text-on-surface-variant">
+                    শ্রেণি রোল (ঐচ্ছিক)
+                  </Label>
+                  <div className="group relative">
+                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors z-10">
+                      tag
+                    </span>
+                    <Input
+                      type="number"
+                      disabled={isPending}
+                      placeholder="যেমন: ১০২"
+                      {...register("roll")}
+                      className="w-full rounded-lg border border-outline-variant py-3 pl-10 pr-4 font-body-md text-on-surface transition-all bg-white focus:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:outline-hidden h-auto"
+                    />
+                  </div>
+                  {errors.roll && (
+                    <p className="text-xs text-error">{errors.roll.message}</p>
                   )}
                 </div>
               </div>
@@ -315,7 +347,7 @@ export function OnboardingForm() {
             </form>
           </div>
 
-          {/* Supplemental System Info Footer like LoginPage */}
+          {/* Supplemental System Info Footer */}
           <div className="mt-8 flex justify-center gap-6">
             <div className="flex items-center gap-2 text-on-surface-variant/60">
               <span className="material-symbols-outlined text-[16px]">verified_user</span>

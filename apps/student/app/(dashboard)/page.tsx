@@ -83,7 +83,7 @@ export default function DashboardPage() {
     }
   }, [items, nowTime])
 
-  const studentName = studentProfile?.nameBn || studentProfile?.name || session?.user?.name || "শিক্ষার্থী"
+  const studentName = studentProfile?.name || session?.user?.name || "শিক্ষার্থী"
 
   // Time-of-day greeting generator
   const greeting = useMemo(() => {

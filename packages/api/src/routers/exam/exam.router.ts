@@ -20,6 +20,9 @@ import {
   toggleExamStatusSchema,
   updateExamSchema,
   updateExamSubjectMcqsSchema,
+  mcqsForAssignmentSchema,
+  examAttemptsSchema,
+  examLeaderboardSchema,
 } from "./exam.schema"
 import {
   addExamSubjects,
@@ -33,6 +36,9 @@ import {
   toggleExamStatus,
   updateExam,
   updateExamSubjectMcqs,
+  getMcqsForAssignment,
+  listExamAttempts,
+  getExamLeaderboardForAdmin,
 } from "./exam.service"
 
 export const examRouter = createTRPCRouter({
@@ -112,4 +118,25 @@ export const examRouter = createTRPCRouter({
   updateSubjectMcqs: protectedProcedure
     .input(updateExamSubjectMcqsSchema)
     .mutation(({ input }) => updateExamSubjectMcqs(db, input)),
+
+  /**
+   * Fetch MCQs for exam assignment with filtering & pagination.
+   */
+  mcqsForAssignment: protectedProcedure
+    .input(mcqsForAssignmentSchema)
+    .query(({ input }) => getMcqsForAssignment(db, input)),
+
+  /**
+   * List attempts for an exam with search query and pagination.
+   */
+  attempts: protectedProcedure
+    .input(examAttemptsSchema)
+    .query(({ input }) => listExamAttempts(db, input)),
+
+  /**
+   * Fetch exam leaderboard for admin.
+   */
+  leaderboard: protectedProcedure
+    .input(examLeaderboardSchema)
+    .query(({ input }) => getExamLeaderboardForAdmin(db, input)),
 })

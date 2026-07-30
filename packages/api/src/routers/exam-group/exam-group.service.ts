@@ -611,12 +611,8 @@ export async function listExamGroupResults(db: PrismaClient, input: ListExamGrou
         student: {
           select: {
             id: true,
-            studentId: true,
             name: true,
-            nameBn: true,
             roll: true,
-            section: true,
-            imageUrl: true,
           },
         },
       },
@@ -652,9 +648,7 @@ export async function getStudentExamGroupResult(db: PrismaClient, input: GetStud
       student: {
         select: {
           id: true,
-          studentId: true,
           name: true,
-          nameBn: true,
           roll: true,
         },
       },
@@ -863,12 +857,8 @@ export async function getStudentGroupLeaderboard(
         student: {
           select: {
             id: true,
-            studentId: true,
             name: true,
-            nameBn: true,
-            imageUrl: true,
             roll: true,
-            section: true,
           },
         },
       },
@@ -890,11 +880,8 @@ export async function getStudentGroupLeaderboard(
     calculatedAt: r.calculatedAt,
     student: {
       id: r.student.id,
-      studentId: r.student.studentId,
-      name: r.student.name || r.student.nameBn || "শিক্ষার্থী",
-      image: r.student.imageUrl,
+      name: r.student.name || "শিক্ষার্থী",
       roll: r.student.roll,
-      section: r.student.section,
     },
     isCurrentUser: student ? r.student.id === student.id : false,
   }))

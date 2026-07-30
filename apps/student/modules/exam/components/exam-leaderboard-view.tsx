@@ -272,7 +272,6 @@ export function ExamLeaderboardView({ examId }: ExamLeaderboardViewProps) {
 
                     {/* Avatar */}
                     <Avatar className="h-11 w-11 border border-outline-variant/40 shrink-0">
-                      <AvatarImage src={item.student.image || ""} alt={item.student.name || ""} />
                       <AvatarFallback className="bg-primary/10 text-primary font-bold text-sm">
                         {item.student.name ? item.student.name.charAt(0) : "S"}
                       </AvatarFallback>
@@ -291,13 +290,9 @@ export function ExamLeaderboardView({ examId }: ExamLeaderboardViewProps) {
                         )}
                       </div>
 
-                      {item.student.roll ? (
+                      {item.student.roll !== undefined && item.student.roll !== null ? (
                         <span className="inline-flex items-center rounded-md bg-surface-container px-2 py-0.5 text-[11px] font-medium text-on-surface-variant border border-outline-variant/20">
                           রোল: {item.student.roll}
-                        </span>
-                      ) : item.student.studentId ? (
-                        <span className="inline-flex items-center rounded-md bg-surface-container px-2 py-0.5 text-[11px] font-mono text-on-surface-variant border border-outline-variant/20">
-                          ID: {item.student.studentId}
                         </span>
                       ) : null}
                     </div>

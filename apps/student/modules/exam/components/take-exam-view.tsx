@@ -284,23 +284,8 @@ export function TakeExamView({ examId }: TakeExamViewProps) {
       setAttemptId(attempt.id)
       setTabSwitches(attempt.tabSwitches ?? 0)
 
-      // Calculate remaining time
-      if (attempt.startTime) {
-        const elapsedSeconds = Math.floor(
-          (Date.now() - new Date(attempt.startTime).getTime()) / 1000,
-        )
-        const remaining = Math.max(0, examTotalSeconds - elapsedSeconds)
-        setTimeLeft(remaining)
-
-        // If time already expired before loading page, auto-submit immediately
-        if (remaining <= 0) {
-          setTimeout(() => {
-            handleFinalSubmit("Auto-TimeUp")
-          }, 100)
-        }
-      } else {
-        setTimeLeft(examTotalSeconds)
-      }
+      // Always use exam.duration as the starting time regardless of attempt start time
+      setTimeLeft(examTotalSeconds)
     } else if (!hasStartedCreationRef.current) {
       hasStartedCreationRef.current = true
       // Auto-start attempt if not created yet

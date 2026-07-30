@@ -25,6 +25,7 @@ export const listExamsSchema = paginationSchema.extend({
   academicClassId: z.string().optional(),
   examGroupId: z.string().optional(),
   query: z.string().optional(),
+  group: z.string().optional(),
   sort: examSortEnum.optional(),
   page: z.number().int().min(1).optional(),
 })
@@ -59,6 +60,7 @@ export const createExamSchema = z.object({
   hasNegativeMark: z.boolean().default(false),
   negativeMark: z.number().default(0),
   type: z.string().min(1, "Exam type is required"),
+  group: z.string().optional().nullable(),
   status: z.string().default("Pending"),
   academicClassId: z.string().min(1, "Academic class is required"),
   subjectIds: z.array(z.string().min(1)).min(1, "At least one subject is required"),
@@ -80,6 +82,7 @@ export const updateExamSchema = z.object({
   hasNegativeMark: z.boolean().optional(),
   negativeMark: z.number().optional(),
   type: z.string().min(1).optional(),
+  group: z.string().optional().nullable(),
   status: z.string().optional(),
   academicClassId: z.string().min(1).optional(),
   examGroupId: z.string().optional().nullable(),
@@ -126,6 +129,36 @@ export const updateExamSubjectMcqsSchema = z.object({
 
 export type UpdateExamSubjectMcqsInput = z.infer<typeof updateExamSubjectMcqsSchema>
 
+export const mcqsForAssignmentSchema = z.object({
+  examId: z.string().min(1),
+  subjectId: z.string().min(1),
+  chapterId: z.string().optional(),
+  board: z.string().optional(),
+  query: z.string().optional(),
+  type: z.string().optional(),
+  assignedStatus: z.string().optional(),
+  sort: z.string().optional(),
+  limit: z.number().int().min(1).optional(),
+  page: z.number().int().min(1).optional(),
+})
+
+export type McqsForAssignmentInput = z.infer<typeof mcqsForAssignmentSchema>
+
+export const examAttemptsSchema = z.object({
+  examId: z.string().min(1),
+  query: z.string().optional(),
+  limit: z.number().int().min(1).optional(),
+  page: z.number().int().min(1).optional(),
+})
+
+export type ExamAttemptsInput = z.infer<typeof examAttemptsSchema>
+
+export const examLeaderboardSchema = z.object({
+  examId: z.string().min(1),
+})
+
+export type ExamLeaderboardInput = z.infer<typeof examLeaderboardSchema>
+
 // ---------------------------------------------------------------------------
 // Select Shape
 // ---------------------------------------------------------------------------
@@ -143,6 +176,7 @@ export const safeExamSelect = {
   hasNegativeMark: true,
   negativeMark: true,
   type: true,
+  group: true,
   status: true,
   academicClassId: true,
   createdAt: true,

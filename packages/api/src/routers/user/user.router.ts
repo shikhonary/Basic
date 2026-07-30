@@ -19,6 +19,7 @@ import {
   updateUserSchema,
   updateUserRolesSchema,
   updateContactSchema,
+  createUserSchema,
 } from "./user.schema"
 import {
   deleteUser,
@@ -27,6 +28,8 @@ import {
   updateUser,
   updateUserRoles,
   updateUserContact,
+  createUser,
+  getUserStats,
 } from "./user.service"
 
 export const userRouter = createTRPCRouter({
@@ -81,4 +84,16 @@ export const userRouter = createTRPCRouter({
   delete: superAdminProcedure
     .input(deleteUserSchema)
     .mutation(({ ctx, input }) => deleteUser(ctx.db, input)),
+
+  /**
+   * Create a new user.
+   */
+  create: superAdminProcedure
+    .input(createUserSchema)
+    .mutation(({ ctx, input }) => createUser(ctx.db, input)),
+
+  /**
+   * Get user management dashboard stats.
+   */
+  stats: superAdminProcedure.query(({ ctx }) => getUserStats(ctx.db)),
 })

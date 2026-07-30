@@ -25,11 +25,38 @@ import { safeMcqSelect } from "./mcq.schema"
 
 export async function listMcqs(db: PrismaClient, input: ListMcqsInput) {
   const where = {
+    ...(input.ids && input.ids.length > 0 ? { id: { in: input.ids } } : {}),
     ...(input.subjectId ? { subjectId: input.subjectId } : {}),
     ...(input.chapterId ? { chapterId: input.chapterId } : {}),
     ...(input.type ? { type: input.type } : {}),
     ...(input.isMath !== undefined ? { isMath: input.isMath } : {}),
     ...(input.isActive !== undefined ? { isActive: input.isActive } : {}),
+    ...(input.board && input.board !== "All"
+      ? (() => {
+          const cleaned = input.board.replace(/\s+/g, "")
+          const match = cleaned.match(/^([^\.]+)\.([^\.]+)\.([০-৯0-9]+)$/)
+          if (match) {
+            const s1 = match[1]!
+            const s2 = match[2]!
+            const year = match[3]!
+            return {
+              reference: {
+                hasSome: [
+                  `${s1}.${s2}.${year}`,
+                  `${s1}. ${s2}.${year}`,
+                  `${s1}.${s2}. ${year}`,
+                  `${s1}. ${s2}. ${year}`,
+                ],
+              },
+            }
+          }
+          return {
+            reference: {
+              has: input.board,
+            },
+          }
+        })()
+      : {}),
     ...(input.query
       ? {
           OR: [

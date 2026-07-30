@@ -6,6 +6,7 @@
   "scripts": {
     "generate": "prisma generate --config prisma/main/prisma.config.ts && prisma generate --config prisma/tenant/prisma.config.ts",
     "migrate:main": "prisma migrate dev --config prisma/main/prisma.config.ts",
+    "migrate:push": "prisma db push --config prisma/main/prisma.config.ts",
     "migrate:tenant": "prisma migrate dev --config prisma/tenant/prisma.config.ts",
     "migrate:deploy": "prisma migrate deploy --config prisma/main/prisma.config.ts && prisma migrate deploy --config prisma/tenant/prisma.config.ts",
     "studio:main": "prisma studio --config prisma/main/prisma.config.ts",
@@ -13,6 +14,7 @@
     "seed:main": "node --loader ts-node/esm prisma/seed/main.seed.ts",
     "seed:tenant": "node --loader ts-node/esm prisma/seed/tenant.seed.ts",
     "assign-super-admin": "npx tsx prisma/seed/assign-super-admin.ts",
+    "update-students-group": "npx tsx prisma/seed/update-students-group.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

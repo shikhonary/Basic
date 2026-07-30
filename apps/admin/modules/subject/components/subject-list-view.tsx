@@ -42,7 +42,7 @@ export function SubjectListView() {
   })
 
   // Query subject stats
-  const { data: statsData } = useSubjectStats()
+  const { data: statsData, isLoading: isStatsLoading } = useSubjectStats()
 
   // Query academic classes for filter dropdown
   const { data: academicClasses = [] } = useAcademicClassesForSelection(
@@ -60,9 +60,10 @@ export function SubjectListView() {
 
       {/* Stats Cards */}
       <SubjectStatsCards
-        totalSubjectsCount={statsData.totalSubjectsCount}
-        activeLevelsCount={statsData.activeLevelsCount}
-        activeGroupsCount={statsData.activeGroupsCount}
+        totalSubjectsCount={statsData?.totalSubjectsCount ?? 0}
+        activeLevelsCount={statsData?.activeLevelsCount ?? 0}
+        activeGroupsCount={statsData?.activeGroupsCount ?? 0}
+        isLoading={isStatsLoading}
       />
 
       {/* Filters & Action Bar */}
@@ -88,10 +89,6 @@ export function SubjectListView() {
         onSortChange={(sort) => {
           setSearchParams({ sort: sort as any, page: 1 })
         }}
-        selectedLimit={limit}
-        onLimitChange={(newLimit) => {
-          setSearchParams({ limit: newLimit, page: 1 })
-        }}
       />
 
       {/* Data Table */}
@@ -99,6 +96,7 @@ export function SubjectListView() {
         items={items}
         isLoading={isLoading}
         isError={isError}
+        isDeleting={false}
         onEdit={(item) => router.push(`/subjects/${item.id}/edit`)}
         onDelete={(id, name) => openDeleteModal(id, name)}
         currentPage={currentPage}
@@ -106,6 +104,9 @@ export function SubjectListView() {
         totalItems={totalItems}
         totalPages={totalPages}
         onPageChange={(page) => setSearchParams({ page })}
+        onLimitChange={(newLimit) => {
+          setSearchParams({ limit: newLimit, page: 1 })
+        }}
       />
     </div>
   )

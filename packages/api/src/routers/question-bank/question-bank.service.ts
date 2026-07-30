@@ -254,7 +254,7 @@ export async function getQuestionBankBoardYears(
     "ম.বো.": "ময়মনসিংহ বোর্ড",
   }
 
-  const boardYearRegex = /(ঢা\.বো\.|রা\.বো\.|য\.বো\.|চ\.বো\.|সি\.বো\.|ব\.বো\.|দি\.বো\.|কু\.বো\.|ম\.বো\.)\s*([০-৯0-9]{2,4})/
+  const boardYearRegex = /(ঢা\.\s*বো\.|রা\.\s*বো\.|য\.\s*বো\.|চ\.\s*বো\.|সি\.\s*বো\.|ব\.\s*বো\.|দি\.\s*বো\.|কু\.\s*বো\.|ম\.\s*বো\.)\s*([০-৯0-9]{2,4})/
 
   const boardYearCounts: Record<
     string,
@@ -266,7 +266,8 @@ export async function getQuestionBankBoardYears(
     refs.forEach((ref) => {
       const match = ref.match(boardYearRegex)
       if (match) {
-        const boardKey = match[1]!
+        const rawBoardKey = match[1]!
+        const boardKey = rawBoardKey.replace(/\s+/g, "")
         const year = match[2]!
         const boardName = boardMap[boardKey] || boardKey
         const fullKey = `${boardKey} ${year}`

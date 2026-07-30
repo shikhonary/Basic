@@ -8,6 +8,13 @@ import { Button } from "@workspace/ui/components/button"
 import { cn } from "@workspace/ui/lib/utils"
 import { RenderMath } from "@workspace/ui/components/render-math"
 import "katex/dist/katex.min.css"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/select"
 
 export interface McqItem {
   id: string
@@ -53,6 +60,34 @@ interface McqTableProps {
   totalItems: number
   totalPages: number
   onPageChange: (page: number) => void
+  onLimitChange?: (limit: number) => void
+}
+
+function getPageNumbers(currentPage: number, totalPages: number) {
+  const delta = 1
+  const range: number[] = []
+  const rangeWithDots: (number | string)[] = []
+  let l: number | undefined
+
+  for (let i = 1; i <= totalPages; i++) {
+    if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
+      range.push(i)
+    }
+  }
+
+  for (const i of range) {
+    if (l !== undefined) {
+      if (i - l === 2) {
+        rangeWithDots.push(l + 1)
+      } else if (i - l > 2) {
+        rangeWithDots.push("...")
+      }
+    }
+    rangeWithDots.push(i)
+    l = i
+  }
+
+  return rangeWithDots
 }
 
 export function McqTable({
@@ -66,11 +101,14 @@ export function McqTable({
   totalItems,
   totalPages,
   onPageChange,
+  onLimitChange,
 }: McqTableProps) {
+  const displayStart = totalItems > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0
+  const displayEnd = Math.min(currentPage * itemsPerPage, totalItems)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const toggleActiveMutation = useToggleMcqActive()
 
-  const optionLetters = ["A", "B", "C", "D", "E", "F", "G", "H"]
+  const optionLetters = ["ক", "খ", "গ", "ঘ", "ঙ", "চ", "ছ", "জ"]
   const romanNumerals = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii"]
 
   const handleSelectAll = (checked: boolean) => {
@@ -197,17 +235,17 @@ export function McqTable({
               >
                 <div className="flex flex-col md:flex-row justify-between items-start gap-6">
                   {/* Selection Checkbox & Main Info */}
-                  <div className="flex items-start gap-4 flex-1 min-w-0">
+                  <div className="flex items-start gap-3 md:gap-4 flex-1 min-w-0 w-full relative md:static">
                     <input
                       type="checkbox"
                       checked={isSelected}
                       onChange={(e) => handleSelectOne(item.id, e.target.checked)}
-                      className="mt-1 h-4 w-4 rounded-sm border-outline-variant text-primary focus:ring-primary cursor-pointer shrink-0"
+                      className="absolute top-[6px] left-0 md:relative md:top-0 md:left-0 md:mt-1 h-4 w-4 rounded-sm border-outline-variant text-primary focus:ring-primary cursor-pointer shrink-0"
                     />
 
                     <div className="flex-1 space-y-4 min-w-0">
                       {/* Badges Row */}
-                      <div className="flex flex-wrap items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2 pl-7 md:pl-0">
                         {/* Global Index Badge */}
                         <span className="px-2 py-0.5 bg-surface-container-high font-mono text-[11px] font-bold text-on-surface-variant rounded">
                           #{globalIndex}
@@ -365,7 +403,7 @@ export function McqTable({
                         </div>
 
                         <span className="text-[11px] font-mono text-outline/60">
-                          ID: {item.id}
+                          ID: {item.id.slice(0, 8)}...
                         </span>
                       </div>
                     </div>
@@ -400,34 +438,76 @@ export function McqTable({
       {/* Pagination Footer */}
       {!isLoading && !isError && totalItems > 0 && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border border-outline-variant bg-surface-container-low rounded-xl p-4">
-          <p className="font-label-sm text-xs text-outline">
-            Showing <span className="font-bold text-on-surface">{(currentPage - 1) * itemsPerPage + 1}</span> to{" "}
-            <span className="font-bold text-on-surface">{Math.min(currentPage * itemsPerPage, totalItems)}</span> of{" "}
-            <span className="font-bold text-on-surface">{totalItems.toLocaleString()}</span> results
-          </p>
+          <div className="flex items-center gap-4 flex-wrap justify-center sm:justify-start">
+            <p className="font-body-md text-xs sm:text-sm text-on-surface-variant">
+              Showing <span className="font-bold">{displayStart}-{displayEnd}</span> of <span className="font-bold">{totalItems}</span> questions
+            </p>
+            {onLimitChange && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-outline font-medium">Rows per page:</span>
+                <Select
+                  value={String(itemsPerPage)}
+                  onValueChange={(val) => onLimitChange(Number(val) || 10)}
+                >
+                  <SelectTrigger className="h-8 rounded-lg border border-outline-variant bg-white px-2.5 font-body-md text-xs outline-hidden focus:ring-2 focus:ring-primary/10 w-auto gap-1">
+                    <SelectValue placeholder="Per Page" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border border-outline-variant shadow-md rounded-lg min-w-[80px]">
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="20">20</SelectItem>
+                    <SelectItem value="50">50</SelectItem>
+                    <SelectItem value="100">100</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              disabled={currentPage <= 1}
-              onClick={() => onPageChange(currentPage - 1)}
-              className="w-10 h-10 flex items-center justify-center border border-outline-variant rounded-lg bg-white hover:bg-surface-container-high transition-colors disabled:opacity-30 cursor-pointer"
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              disabled={currentPage === 1}
+              onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+              className="size-8 sm:size-10 rounded-lg border border-outline-variant bg-white transition-colors hover:bg-surface-container-high disabled:opacity-30"
             >
-              <span className="material-symbols-outlined text-lg">chevron_left</span>
-            </button>
-
-            <span className="font-label-sm text-xs font-bold text-on-surface px-3">
-              Page {currentPage} of {totalPages}
-            </span>
-
-            <button
-              type="button"
-              disabled={currentPage >= totalPages}
-              onClick={() => onPageChange(currentPage + 1)}
-              className="w-10 h-10 flex items-center justify-center border border-outline-variant rounded-lg bg-white hover:bg-surface-container-high transition-colors disabled:opacity-30 cursor-pointer"
+              <span className="material-symbols-outlined text-sm sm:text-base">chevron_left</span>
+            </Button>
+            {getPageNumbers(currentPage, totalPages).map((pageNum, idx) => {
+              if (pageNum === "...") {
+                return (
+                  <span
+                    key={`dots-${idx}`}
+                    className="inline-flex size-8 sm:size-10 items-center justify-center font-body-md text-xs sm:text-sm text-outline select-none"
+                  >
+                    ...
+                  </span>
+                )
+              }
+              return (
+                <Button
+                  key={`page-${pageNum}`}
+                  variant={currentPage === pageNum ? "default" : "ghost"}
+                  onClick={() => onPageChange(Number(pageNum))}
+                  className={`size-8 sm:size-10 rounded-lg font-body-md text-xs sm:text-sm transition-colors cursor-pointer ${
+                    currentPage === pageNum
+                      ? "bg-primary font-bold text-on-primary hover:bg-primary"
+                      : "hover:bg-surface-container-high text-on-surface"
+                  }`}
+                >
+                  {pageNum}
+                </Button>
+              )
+            })}
+            <Button
+              variant="outline"
+              size="icon"
+              disabled={currentPage === totalPages}
+              onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+              className="size-8 sm:size-10 rounded-lg border border-outline-variant bg-white transition-colors hover:bg-surface-container-high disabled:opacity-30"
             >
-              <span className="material-symbols-outlined text-lg">chevron_right</span>
-            </button>
+              <span className="material-symbols-outlined text-sm sm:text-base">chevron_right</span>
+            </Button>
           </div>
         </div>
       )}

@@ -145,14 +145,11 @@ export async function updateStudentProfile(
     select: safeStudentSelect,
   })
 
-  // Sync user name/image if updated
-  if (input.name || input.imageUrl) {
-    const userDataToUpdate: any = {}
-    if (input.name) userDataToUpdate.name = input.name
-    if (input.imageUrl) userDataToUpdate.image = input.imageUrl
+  // Sync user name if updated
+  if (input.name) {
     await db.user.update({
       where: { id: userId },
-      data: userDataToUpdate,
+      data: { name: input.name },
     })
   }
 

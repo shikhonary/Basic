@@ -101,8 +101,7 @@ export function ExamGroupListView() {
         onIsPublishedChange={(p) => setSearchParams({ isPublished: p, page: 1 })}
         selectedSort={sort}
         onSortChange={(st) => setSearchParams({ sort: st as any, page: 1 })}
-        selectedLimit={limit}
-        onLimitChange={(l) => setSearchParams({ limit: l, page: 1 })}
+        onResetAll={() => setSearchParams({ query: "", type: "All", calculationType: "All", academicClassId: "All", isPublished: "All", sort: "All", page: 1 })}
       />
 
       {/* Table Data */}
@@ -120,6 +119,7 @@ export function ExamGroupListView() {
         totalItems={totalItems}
         totalPages={totalPages}
         onPageChange={(p) => setSearchParams({ page: p })}
+        onLimitChange={(l) => setSearchParams({ limit: l, page: 1 })}
       />
 
       {/* Delete Confirmation Modal */}

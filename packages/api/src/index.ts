@@ -23,8 +23,14 @@ export type {
   UpdateUserInput,
   UpdateUserRolesInput,
   DeleteUserInput,
+  CreateUserInput,
 } from "./routers/user/user.schema"
-export type { RoleForSelectionInput } from "./routers/role/role.schema"
+export type {
+  RoleForSelectionInput,
+  ListRolesInput,
+  CreateRoleInput,
+  UpdateRoleInput,
+} from "./routers/role/role.schema"
 export type {
   ListAcademicClassesInput,
   GetAcademicClassInput,
@@ -75,6 +81,7 @@ export type {
   ToggleExamStatusInput,
   AddExamSubjectsInput,
   RemoveExamSubjectInput,
+  McqsForAssignmentInput,
   ExamSortOption,
 } from "./routers/exam/exam.schema"
 export type {
