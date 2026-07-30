@@ -156,6 +156,7 @@ export function CreateExamView() {
   const [title, setTitle] = useState("")
   const [type, setType] = useState("MCQ")
   const [status, setStatus] = useState("Pending")
+  const [group, setGroup] = useState("")
   const [total, setTotal] = useState<number | "">(100)
   const [duration, setDuration] = useState<number | "">(60)
   const [totalMcq, setTotalMcq] = useState<number | "">(50)
@@ -260,6 +261,7 @@ export function CreateExamView() {
         title: title.trim(),
         type,
         status,
+        group: group !== "none" ? group || undefined : undefined,
         academicClassId,
         total: Number(total),
         duration: Number(duration),
@@ -433,7 +435,34 @@ export function CreateExamView() {
               </div>
             </div>
 
-            {/* Attach to Exam Group Select (Fifth Field) */}
+            {/* Group Input (Fifth Field) */}
+            <div className="space-y-2">
+              <Label htmlFor="exam-group" className="block font-label-sm text-xs font-medium uppercase tracking-wider text-on-surface-variant">
+                Group (Optional)
+              </Label>
+              <div className="group relative">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors z-10 pointer-events-none">
+                  category
+                </span>
+                <Select
+                  disabled={isSubmitting}
+                  value={group}
+                  onValueChange={(val) => setGroup(val ?? "none")}
+                >
+                  <SelectTrigger id="exam-group" className="w-full rounded-lg border border-outline-variant bg-white py-3 pl-10 pr-10 font-body-md text-on-surface transition-all cursor-pointer focus:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:outline-hidden h-auto justify-between">
+                    <SelectValue placeholder="-- Select Group --" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border border-outline-variant shadow-md rounded-lg">
+                    <SelectItem value="none">None / All Groups</SelectItem>
+                    <SelectItem value="Science">Science (বিজ্ঞান)</SelectItem>
+                    <SelectItem value="Commerce">Commerce (ব্যবসায় শিক্ষা)</SelectItem>
+                    <SelectItem value="Humanities">Humanities (মানবিক)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Attach to Exam Group Select (Sixth Field) */}
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="exam-group-select" className="block font-label-sm text-xs font-medium uppercase tracking-wider text-on-surface-variant">
                 Attach to Exam Group (Optional)

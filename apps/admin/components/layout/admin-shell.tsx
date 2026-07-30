@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import { SideNav } from "./side-nav"
 import { TopNav } from "./top-nav"
-import { MobileNav } from "./mobile-nav"
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const [isCollapsed, setIsCollapsed] = useState(false)
@@ -41,13 +40,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         <TopNav />
 
         {/* Main Content Area Canvas */}
-        <main className="flex-1 bg-surface-bright p-6 pb-24 md:p-8 md:pb-8">
+        <main className="flex-1 bg-surface-bright p-4 sm:p-6 md:p-8 pb-8">
           {children}
         </main>
       </div>
-
-      {/* Mobile Navigation */}
-      <MobileNav />
     </div>
   )
 }

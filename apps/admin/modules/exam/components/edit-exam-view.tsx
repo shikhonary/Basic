@@ -167,6 +167,7 @@ export function EditExamView({ examId }: EditExamViewProps) {
   const [title, setTitle] = useState("")
   const [type, setType] = useState("MCQ")
   const [status, setStatus] = useState("Pending")
+  const [group, setGroup] = useState("")
   const [total, setTotal] = useState<number | "">(100)
   const [duration, setDuration] = useState<number | "">(60)
   const [totalMcq, setTotalMcq] = useState<number | "">(50)
@@ -192,6 +193,7 @@ export function EditExamView({ examId }: EditExamViewProps) {
       setTitle(exam.title ?? "")
       setType(exam.type ?? "MCQ")
       setStatus(exam.status ?? "Pending")
+      setGroup((exam as any).group ?? "none")
       setAcademicClassId(exam.academicClassId ?? "")
       setIsOffline(Boolean((exam as any).isOffline))
       setTotal(exam.total ?? 100)
@@ -269,6 +271,7 @@ export function EditExamView({ examId }: EditExamViewProps) {
         title: title.trim(),
         type,
         status,
+        group: group !== "none" ? group || null : null,
         academicClassId,
         total: Number(total),
         duration: Number(duration),
@@ -472,6 +475,33 @@ export function EditExamView({ examId }: EditExamViewProps) {
                         {s.label}
                       </SelectItem>
                     ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Group */}
+            <div className="space-y-2">
+              <Label htmlFor="edit-exam-group-field" className="block font-label-sm text-xs font-medium uppercase tracking-wider text-on-surface-variant">
+                Group (Optional)
+              </Label>
+              <div className="group relative">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors z-10 pointer-events-none">
+                  category
+                </span>
+                <Select
+                  disabled={isSubmitting}
+                  value={group}
+                  onValueChange={(val) => setGroup(val ?? "none")}
+                >
+                  <SelectTrigger id="edit-exam-group-field" className="w-full rounded-lg border border-outline-variant bg-white py-3 pl-10 pr-10 font-body-md text-on-surface transition-all cursor-pointer focus:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:outline-hidden h-auto justify-between">
+                    <SelectValue placeholder="-- Select Group --" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border border-outline-variant shadow-md rounded-lg">
+                    <SelectItem value="none">None / All Groups</SelectItem>
+                    <SelectItem value="Science">Science (বিজ্ঞান)</SelectItem>
+                    <SelectItem value="Commerce">Commerce (ব্যবসায় শিক্ষা)</SelectItem>
+                    <SelectItem value="Humanities">Humanities (মানবিক)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

@@ -403,6 +403,7 @@ model ExamGroup {
   startDate       DateTime?
   endDate         DateTime?
   isPublished     Boolean   @default(false)
+  group           String?
 
   academicClassId String?
   academicClass   AcademicClass? @relation(fields: [academicClassId], references: [id], onDelete: SetNull)
@@ -417,6 +418,7 @@ model ExamGroup {
   @@index([type])
   @@index([academicClassId])
   @@index([isPublished])
+  @@index([group])
   @@map("exam_group")
 }
 

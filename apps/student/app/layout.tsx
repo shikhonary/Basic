@@ -2,7 +2,6 @@ import { Inter, Manrope, JetBrains_Mono } from "next/font/google"
 
 import "@workspace/ui/globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
-import { AuthGuard } from "@/components/auth-guard"
 import { TRPCReactProvider } from "@/trpc/client"
 import { cn } from "@workspace/ui/lib/utils";
 
@@ -27,7 +26,7 @@ export default function RootLayout({
       <body>
         <TRPCReactProvider>
           <ThemeProvider>
-            <AuthGuard>{children}</AuthGuard>
+            {children}
           </ThemeProvider>
         </TRPCReactProvider>
       </body>

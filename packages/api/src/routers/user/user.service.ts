@@ -15,6 +15,7 @@ import type {
   UpdateUserInput,
   UpdateUserRolesInput,
   CreateUserInput,
+  UserForSelectionInput,
 } from "./user.schema"
 import { safeUserSelect } from "./user.schema"
 
@@ -291,3 +292,32 @@ export async function getUserStats(db: PrismaClient) {
     systemHealth: 98,
   }
 }
+
+export async function getUsersForSelection(
+  db: PrismaClient,
+  input: UserForSelectionInput
+) {
+  const limit = input.limit ?? 10
+  const where: any = {}
+
+  if (input.query) {
+    where.OR = [
+      { name: { contains: input.query, mode: "insensitive" } },
+      { email: { contains: input.query, mode: "insensitive" } },
+      { phoneNumber: { contains: input.query } },
+    ]
+  }
+
+  return db.user.findMany({
+    take: limit,
+    where,
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      phoneNumber: true,
+    },
+    orderBy: { createdAt: "desc" },
+  })
+}
+

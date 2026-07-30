@@ -83,3 +83,11 @@ export const createUserSchema = z.object({
 
 export type CreateUserInput = z.infer<typeof createUserSchema>
 
+export const userForSelectionSchema = z.object({
+  query: z.string().optional(),
+  limit: z.number().int().min(1).max(50).optional(),
+})
+
+export type UserForSelectionInput = z.infer<typeof userForSelectionSchema>
+
+

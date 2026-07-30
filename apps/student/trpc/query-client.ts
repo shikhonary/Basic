@@ -11,11 +11,43 @@
 import {
   defaultShouldDehydrateQuery,
   isServer,
+  MutationCache,
+  QueryCache,
   QueryClient,
 } from "@tanstack/react-query"
 
+function isUnauthorizedError(error: unknown): boolean {
+  if (error && typeof error === "object") {
+    if ("code" in error && (error as any).code === "UNAUTHORIZED") return true
+    if (
+      "message" in error &&
+      typeof (error as any).message === "string" &&
+      ((error as any).message.includes("signed in") ||
+        (error as any).message.includes("UNAUTHORIZED"))
+    ) {
+      return true
+    }
+  }
+  return false
+}
+
+function handleUnauthorized(error: unknown) {
+  if (!isServer && typeof window !== "undefined" && isUnauthorizedError(error)) {
+    const currentPath = window.location.pathname
+    if (!currentPath.startsWith("/auth/sign-in")) {
+      window.location.href = `/auth/sign-in?callbackUrl=${encodeURIComponent(currentPath)}`
+    }
+  }
+}
+
 function makeQueryClient() {
   return new QueryClient({
+    queryCache: new QueryCache({
+      onError: (error) => handleUnauthorized(error),
+    }),
+    mutationCache: new MutationCache({
+      onError: (error) => handleUnauthorized(error),
+    }),
     defaultOptions: {
       queries: {
         /**
@@ -23,6 +55,10 @@ function makeQueryClient() {
          * that was just fetched on the server.
          */
         staleTime: 30 * 1_000,
+        retry: (failureCount, error) => {
+          if (isUnauthorizedError(error)) return false
+          return failureCount < 3
+        },
       },
       dehydrate: {
         // Include pending (in-flight) queries so RSC prefetches are streamed

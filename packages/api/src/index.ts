@@ -24,6 +24,7 @@ export type {
   UpdateUserRolesInput,
   DeleteUserInput,
   CreateUserInput,
+  UserForSelectionInput,
 } from "./routers/user/user.schema"
 export type {
   RoleForSelectionInput,
@@ -39,6 +40,16 @@ export type {
   UpdateAcademicClassInput,
   DeleteAcademicClassInput,
 } from "./routers/academic-class/academic-class.schema"
+export type {
+  ListStudentsInput,
+  CreateStudentInput,
+  UpdateStudentInput,
+  GetStudentInput,
+  DeleteStudentInput,
+  CompleteStudentOnboardingInput,
+  UpdateStudentProfileInput,
+} from "./routers/student/student.schema"
+
 export type {
   ListSubjectsInput,
   GetSubjectInput,

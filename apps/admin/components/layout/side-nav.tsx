@@ -46,6 +46,7 @@ const navGroups = [
     title: "Administration",
     items: [
       { href: "/users", label: "Users", icon: Users },
+      { href: "/students", label: "Students", icon: Users },
       { href: "/roles", label: "Roles", icon: Shield },
     ],
   },

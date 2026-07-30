@@ -20,6 +20,7 @@ import {
   updateUserRolesSchema,
   updateContactSchema,
   createUserSchema,
+  userForSelectionSchema,
 } from "./user.schema"
 import {
   deleteUser,
@@ -30,6 +31,7 @@ import {
   updateUserContact,
   createUser,
   getUserStats,
+  getUsersForSelection,
 } from "./user.service"
 
 export const userRouter = createTRPCRouter({
@@ -96,4 +98,11 @@ export const userRouter = createTRPCRouter({
    * Get user management dashboard stats.
    */
   stats: superAdminProcedure.query(({ ctx }) => getUserStats(ctx.db)),
+
+  /**
+   * Search users for selection.
+   */
+  forSelection: superAdminProcedure
+    .input(userForSelectionSchema)
+    .query(({ ctx, input }) => getUsersForSelection(ctx.db, input)),
 })

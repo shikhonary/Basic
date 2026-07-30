@@ -28,6 +28,12 @@ function makeTRPCClient() {
     links: [
       httpBatchLink({
         url: `${getBaseUrl()}/api/trpc`,
+        fetch(url, options) {
+          return fetch(url, {
+            ...options,
+            credentials: "include",
+          })
+        },
         /**
          * superjson must match the transformer set in `packages/api/src/trpc.ts`.
          */
