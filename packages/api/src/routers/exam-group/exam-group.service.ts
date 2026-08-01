@@ -26,6 +26,7 @@ import type {
   UpdateExamGroupItemInput,
 } from "./exam-group.schema"
 import { safeExamGroupSelect } from "./exam-group.schema"
+import { getEquivalentGroups } from "../exam-attempt/exam-attempt.service"
 
 
 // ---------------------------------------------------------------------------
@@ -36,6 +37,11 @@ export async function listExamGroups(db: PrismaClient, input: ListExamGroupsInpu
   const where = {
     ...(input.type ? { type: input.type } : {}),
     ...(input.academicClassId ? { academicClassId: input.academicClassId } : {}),
+    ...(input.group && input.group !== "All"
+      ? input.group === "Common"
+        ? { group: null }
+        : { group: input.group }
+      : {}),
     ...(typeof input.isPublished === "boolean" ? { isPublished: input.isPublished } : {}),
     ...(input.query
       ? {
@@ -710,7 +716,7 @@ export async function listStudentExamGroups(
   // Resolve the current student
   const student = await db.student.findFirst({
     where: { userId },
-    select: { id: true, academicClassId: true },
+    select: { id: true, academicClassId: true, group: true },
   })
 
   if (!student) {
@@ -720,9 +726,15 @@ export async function listStudentExamGroups(
     })
   }
 
+  const allowedGroups = getEquivalentGroups(student.group)
+
   const where = {
     isPublished: true,
     academicClassId: student.academicClassId,
+    OR: [
+      { group: null },
+      ...(allowedGroups.length > 0 ? [{ group: { in: allowedGroups } }] : []),
+    ],
   }
 
   const page = input.page ?? 1

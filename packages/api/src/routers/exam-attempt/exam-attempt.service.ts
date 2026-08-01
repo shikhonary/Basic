@@ -26,6 +26,23 @@ import { safeAnswerHistorySelect, safeAttemptSelect } from "./exam-attempt.schem
 // Helpers
 // ---------------------------------------------------------------------------
 
+export function getEquivalentGroups(group: string | null | undefined): string[] {
+  if (!group) return []
+  const g = group.trim().toLowerCase()
+  
+  if (g === "science" || g === "বিজ্ঞান") {
+    return ["Science", "বিজ্ঞান", "science"]
+  }
+  if (g === "commerce" || g === "ব্যবসায় শিক্ষা" || g === "ব্যবসায় শিক্ষা") {
+    return ["Commerce", "ব্যবসায় শিক্ষা", "ব্যবসায় শিক্ষা", "commerce"]
+  }
+  if (g === "humanities" || g === "arts" || g === "মানবিক") {
+    return ["Humanities", "Arts", "মানবিক", "humanities", "arts"]
+  }
+  
+  return [group]
+}
+
 /**
  * Resolve the student record from a user ID.
  * Throws FORBIDDEN if no student profile is linked.
@@ -149,6 +166,7 @@ export async function listAvailableExams(
   const targetClassId = input.academicClassId || student?.academicClassId
   const studentGroup = student?.group?.trim()
   const now = new Date()
+  const allowedGroups = getEquivalentGroups(studentGroup)
 
   const where: any = {
     ...(targetClassId ? { academicClassId: targetClassId } : {}),
@@ -156,10 +174,29 @@ export async function listAvailableExams(
     AND: [
       {
         OR: [
-          { group: null },
-          { group: "" },
-          ...(studentGroup ? [{ group: studentGroup }] : []),
+          { examGroupItems: { none: {} } },
+          { examGroupItems: { some: { examGroup: { group: null } } } },
+          ...(allowedGroups.length > 0
+            ? [{ examGroupItems: { some: { examGroup: { group: { in: allowedGroups } } } } }]
+            : []),
         ],
+      },
+      {
+        examSubjects: {
+          none: {
+            subject: {
+              group: {
+                notIn: [
+                  ...allowedGroups,
+                  "null",
+                  "General",
+                  "general",
+                ],
+                not: null,
+              },
+            },
+          },
+        },
       },
       ...(input.query
         ? [
@@ -197,7 +234,6 @@ export async function listAvailableExams(
         startDate: true,
         endDate: true,
         type: true,
-        group: true,
         status: true,
         hasNegativeMark: true,
         negativeMark: true,
@@ -313,7 +349,6 @@ export async function getExamForAttempt(
       hasNegativeMark: true,
       negativeMark: true,
       type: true,
-      group: true,
       status: true,
       academicClassId: true,
       examSubjects: {
@@ -335,9 +370,42 @@ export async function getExamForAttempt(
     throw forbidden("This exam is not assigned to your class.")
   }
 
-  const examGroup = exam.group?.trim()
-  if (examGroup && examGroup !== student.group?.trim()) {
-    throw forbidden("This exam is not assigned to your group.")
+  // If the exam belongs to any ExamGroups, check if student's group is allowed
+  const examGroups = await db.examGroupItem.findMany({
+    where: { examId: exam.id },
+    select: { examGroup: { select: { group: true } } },
+  })
+  const studentGroup = student.group?.trim()
+  const studentAllowedGroups = getEquivalentGroups(studentGroup)
+  
+  if (examGroups.length > 0) {
+    const allowedGroups = examGroups.map(eg => eg.examGroup?.group?.trim() ?? null)
+    const hasAccess = allowedGroups.includes(null) || 
+      allowedGroups.some(ag => ag && studentAllowedGroups.includes(ag))
+    if (!hasAccess) {
+      throw forbidden("This exam is not available for your academic group.")
+    }
+  }
+
+  // Validate that the exam subjects match student's academic group
+  const mismatchedSubjectsCount = await db.examSubject.count({
+    where: {
+      examId: exam.id,
+      subject: {
+        group: {
+          notIn: [
+            ...studentAllowedGroups,
+            "null",
+            "General",
+            "general",
+          ],
+          not: null,
+        },
+      },
+    },
+  })
+  if (mismatchedSubjectsCount > 0) {
+    throw forbidden("This exam is not available for your academic group.")
   }
 
   // Check for existing in-progress or not-started attempt
@@ -522,7 +590,6 @@ export async function createAttempt(
       totalMcq: true,
       total: true,
       type: true,
-      group: true,
       hasNegativeMark: true,
       negativeMark: true,
       hasSuffle: true,
@@ -541,9 +608,42 @@ export async function createAttempt(
     throw forbidden("This exam is not assigned to your class.")
   }
 
-  const examGroup = exam.group?.trim()
-  if (examGroup && examGroup !== student.group?.trim()) {
-    throw forbidden("This exam is not assigned to your group.")
+  // If the exam belongs to any ExamGroups, check if student's group is allowed
+  const examGroups = await db.examGroupItem.findMany({
+    where: { examId: exam.id },
+    select: { examGroup: { select: { group: true } } },
+  })
+  const studentGroup = student.group?.trim()
+  const studentAllowedGroups = getEquivalentGroups(studentGroup)
+
+  if (examGroups.length > 0) {
+    const allowedGroups = examGroups.map(eg => eg.examGroup?.group?.trim() ?? null)
+    const hasAccess = allowedGroups.includes(null) || 
+      allowedGroups.some(ag => ag && studentAllowedGroups.includes(ag))
+    if (!hasAccess) {
+      throw forbidden("This exam is not available for your academic group.")
+    }
+  }
+
+  // Validate that the exam subjects match student's academic group
+  const mismatchedSubjectsCount = await db.examSubject.count({
+    where: {
+      examId: exam.id,
+      subject: {
+        group: {
+          notIn: [
+            ...studentAllowedGroups,
+            "null",
+            "General",
+            "general",
+          ],
+          not: null,
+        },
+      },
+    },
+  })
+  if (mismatchedSubjectsCount > 0) {
+    throw forbidden("This exam is not available for your academic group.")
   }
 
   const now = new Date()
@@ -919,11 +1019,28 @@ export async function getExamLeaderboard(
     throw notFound("Exam not found.")
   }
 
+  // Attach rank and identify current student
+  const student = await db.student.findUnique({
+    where: { userId },
+    select: { id: true, group: true },
+  })
+
+  const allowedGroups = student ? getEquivalentGroups(student.group) : []
+
   // Find all submitted attempts for this exam
   const attempts = await db.examAttempt.findMany({
     where: {
       examId: input.examId,
       status: { in: [ATTEMPT_STATUS.SUBMITTED, ATTEMPT_STATUS.AUTO_SUBMITTED] },
+      ...(allowedGroups.length > 0
+        ? {
+            student: {
+              group: {
+                in: allowedGroups,
+              },
+            },
+          }
+        : {}),
     },
     select: {
       id: true,
@@ -949,12 +1066,6 @@ export async function getExamLeaderboard(
       { duration: "asc" },
       { createdAt: "asc" },
     ],
-  })
-
-  // Attach rank and identify current student
-  const student = await db.student.findUnique({
-    where: { userId },
-    select: { id: true },
   })
 
   const leaderboard = attempts.map((att, index) => ({

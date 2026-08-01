@@ -215,12 +215,25 @@ export function ExamGroupDetailView({ id }: ExamGroupDetailViewProps) {
 
       {/* Group Details Header Card */}
       <div className="rounded-xl border border-outline-variant/30 bg-surface p-6 shadow-xs space-y-4">
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
           <div>
             <span className="text-xs font-semibold text-outline uppercase tracking-wider">Class</span>
             <p className="mt-1 font-bold text-on-surface">
               {groupData.academicClass?.nameEn || "Global / All Classes"}
             </p>
+          </div>
+
+          <div>
+            <span className="text-xs font-semibold text-outline uppercase tracking-wider">Group</span>
+            <div className="mt-1">
+              {groupData.group ? (
+                <Badge variant="outline" className="bg-teal-50 text-teal-700 border-teal-200">
+                  {groupData.group}
+                </Badge>
+              ) : (
+                <span className="text-sm font-bold text-on-surface">Common</span>
+              )}
+            </div>
           </div>
 
           <div>

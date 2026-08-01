@@ -18,6 +18,7 @@ import {
   BookOpen,
   CheckCircle2,
   GraduationCap,
+  AlertTriangle,
 } from "lucide-react"
 import { useCurrentUser } from "@/modules/user/services/use-user"
 import { useStudentProfile } from "@/modules/profile/services/use-profile"
@@ -109,6 +110,19 @@ export default function DashboardPage() {
          VERIFICATION ALERT BANNER FOR UNVERIFIED STUDENTS
       ───────────────────────────────────────────────────────────── */}
       <DashboardVerificationBanner onOpenModal={() => setIsVerificationModalOpen(true)} />
+
+      {/* ─────────────────────────────────────────────────────────────
+         TEMPORARY LEADERBOARD BANNER
+      ───────────────────────────────────────────────────────────── */}
+      <div className="flex items-start gap-3 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 text-amber-800 dark:text-amber-300">
+        <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5 text-amber-500" />
+        <div className="space-y-1">
+          <h4 className="font-bold text-sm">জরুরি নোটিশ</h4>
+          <p className="text-xs leading-relaxed opacity-95">
+           পোর্টাল উন্নয়নমূলক কাজের জন্য সকল শিক্ষার্থী সব পরীক্ষায় অংশ নিতে পারেননি। এই কারণে পূর্ববর্তী সপ্তাহের সকল পরীক্ষা বাতিল করা হয়েছে। এখন থেকে পরবর্তী পরীক্ষাগুলোর ফলাফলের ভিত্তিতে লিডারবোর্ড হিসাব করা হবে।
+          </p>
+        </div>
+      </div>
 
       {/* ─────────────────────────────────────────────────────────────
          1. WELCOME HERO BANNER AT THE TOP

@@ -236,7 +236,6 @@ model Exam {
   hasNegativeMark Boolean  @default(false)
   negativeMark    Float    @default(0)
   type            String
-  group           String?
   isOffline       Boolean  @default(false)
 
   status String @default("Pending")

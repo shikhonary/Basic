@@ -165,6 +165,7 @@ export function EditExamGroupView({ id }: EditExamGroupViewProps) {
   const [totalMarks, setTotalMarks] = useState<number | "">("")
   const [passMarks, setPassMarks] = useState<number | "">("")
   const [academicClassId, setAcademicClassId] = useState<string>("none")
+  const [group, setGroup] = useState<string>("none")
   const [isPublished, setIsPublished] = useState(false)
   const [startDate, setStartDate] = useState<Date | undefined>(undefined)
   const [endDate, setEndDate] = useState<Date | undefined>(undefined)
@@ -180,6 +181,7 @@ export function EditExamGroupView({ id }: EditExamGroupViewProps) {
       setTotalMarks(groupData.totalMarks ?? "")
       setPassMarks(groupData.passMarks ?? "")
       setAcademicClassId(groupData.academicClassId || "none")
+      setGroup(groupData.group || "none")
       setIsPublished(Boolean(groupData.isPublished))
       setStartDate(groupData.startDate ? new Date(groupData.startDate) : undefined)
       setEndDate(groupData.endDate ? new Date(groupData.endDate) : undefined)
@@ -211,6 +213,7 @@ export function EditExamGroupView({ id }: EditExamGroupViewProps) {
         totalMarks: totalMarks !== "" ? Number(totalMarks) : null,
         passMarks: passMarks !== "" ? Number(passMarks) : null,
         academicClassId: academicClassId !== "none" ? academicClassId : null,
+        group: group !== "none" ? group : null,
         isPublished,
         startDate: startDate || null,
         endDate: endDate || null,
@@ -320,6 +323,33 @@ export function EditExamGroupView({ id }: EditExamGroupViewProps) {
                         {cls.nameEn} ({cls.level})
                       </SelectItem>
                     ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Target Academic Group Select */}
+            <div className="space-y-2">
+              <Label htmlFor="academic-group-select" className="block font-label-sm text-xs font-medium uppercase tracking-wider text-on-surface-variant">
+                Target Academic Group
+              </Label>
+              <div className="group relative">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors z-10 pointer-events-none">
+                  groups
+                </span>
+                <Select
+                  disabled={isSubmitting}
+                  value={group}
+                  onValueChange={(val) => setGroup(val ?? "none")}
+                >
+                  <SelectTrigger id="academic-group-select" className="w-full rounded-lg border border-outline-variant bg-white py-3 pl-10 pr-10 font-body-md text-on-surface transition-all cursor-pointer focus:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:outline-hidden h-auto justify-between">
+                    <SelectValue placeholder="Select Group (Optional)..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border border-outline-variant shadow-md rounded-lg">
+                    <SelectItem value="none">None / Common</SelectItem>
+                    <SelectItem value="Science">Science</SelectItem>
+                    <SelectItem value="Commerce">Commerce</SelectItem>
+                    <SelectItem value="Arts">Arts</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

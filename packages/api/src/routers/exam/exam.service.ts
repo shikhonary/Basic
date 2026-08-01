@@ -33,7 +33,6 @@ export async function listExams(db: PrismaClient, input: ListExamsInput) {
     ...(input.status ? { status: input.status } : {}),
     ...(input.type ? { type: input.type } : {}),
     ...(input.academicClassId ? { academicClassId: input.academicClassId } : {}),
-    ...(input.group ? { group: input.group } : {}),
     ...(input.examGroupId
       ? { examGroupItems: { some: { examGroupId: input.examGroupId } } }
       : {}),
@@ -147,7 +146,7 @@ export async function getExamStats(db: PrismaClient, input?: ExamStatsInput) {
 
 export async function createExam(db: PrismaClient, input: CreateExamInput) {
   try {
-    const { subjectIds, academicClassId, examGroupId, ...examData } = input
+    const { subjectIds, academicClassId, examGroupIds, ...examData } = input
 
     // Validate date range
     if (examData.endDate <= examData.startDate) {
@@ -173,14 +172,14 @@ export async function createExam(db: PrismaClient, input: CreateExamInput) {
       throw badRequest("One or more subject IDs are invalid")
     }
 
-    // If examGroupId is provided, validate it exists
-    if (examGroupId) {
-      const examGroup = await db.examGroup.findUnique({
-        where: { id: examGroupId },
+    // If examGroupIds is provided, validate they exist
+    if (examGroupIds && examGroupIds.length > 0) {
+      const examGroups = await db.examGroup.findMany({
+        where: { id: { in: examGroupIds } },
         select: { id: true },
       })
-      if (!examGroup) {
-        throw badRequest("Exam Group ID is invalid")
+      if (examGroups.length !== examGroupIds.length) {
+        throw badRequest("One or more Exam Group IDs are invalid")
       }
     }
 
@@ -201,15 +200,15 @@ export async function createExam(db: PrismaClient, input: CreateExamInput) {
         })),
       })
 
-      if (examGroupId) {
-        await tx.examGroupItem.create({
-          data: {
-            examGroupId,
+      if (examGroupIds && examGroupIds.length > 0) {
+        await tx.examGroupItem.createMany({
+          data: examGroupIds.map((groupId) => ({
+            examGroupId: groupId,
             examId: created.id,
             position: 0,
             weightage: 100.0,
             isRequired: true,
-          },
+          })),
         })
       }
 
@@ -231,7 +230,7 @@ export async function createExam(db: PrismaClient, input: CreateExamInput) {
 }
 
 export async function updateExam(db: PrismaClient, input: UpdateExamInput) {
-  const { id, academicClassId, examGroupId, ...data } = input
+  const { id, academicClassId, examGroupIds, ...data } = input
 
   const existing = await db.exam.findUnique({
     where: { id },
@@ -251,37 +250,51 @@ export async function updateExam(db: PrismaClient, input: UpdateExamInput) {
     throw badRequest("End date must be after start date")
   }
 
-  if (examGroupId !== undefined) {
-    // If examGroupId is provided, link or update
-    if (examGroupId === null || examGroupId === "none" || examGroupId === "") {
+  if (examGroupIds !== undefined) {
+    if (examGroupIds === null || examGroupIds.length === 0) {
       // Remove all group items for this exam
       await db.examGroupItem.deleteMany({
         where: { examId: id },
       })
     } else {
-      const groupExists = await db.examGroup.findUnique({
-        where: { id: examGroupId },
+      const validGroups = await db.examGroup.findMany({
+        where: { id: { in: examGroupIds } },
         select: { id: true },
       })
-      if (!groupExists) throw badRequest("Exam Group ID is invalid")
+      if (validGroups.length !== examGroupIds.length) {
+        throw badRequest("One or more Exam Group IDs are invalid")
+      }
 
-      // Upsert the exam group item link
-      await db.examGroupItem.upsert({
-        where: {
-          examGroupId_examId: {
-            examGroupId,
-            examId: id,
-          },
-        },
-        create: {
-          examGroupId,
-          examId: id,
-          position: 0,
-          weightage: 100.0,
-          isRequired: true,
-        },
-        update: {},
+      // Sync mappings
+      const existingItems = await db.examGroupItem.findMany({
+        where: { examId: id },
+        select: { examGroupId: true },
       })
+      const existingGroupIds = existingItems.map((item) => item.examGroupId)
+
+      const toDelete = existingGroupIds.filter((gid) => !examGroupIds.includes(gid))
+      const toCreate = examGroupIds.filter((gid) => !existingGroupIds.includes(gid))
+
+      if (toDelete.length > 0) {
+        await db.examGroupItem.deleteMany({
+          where: {
+            examId: id,
+            examGroupId: { in: toDelete },
+          },
+        })
+      }
+
+      if (toCreate.length > 0) {
+        await db.examGroupItem.createMany({
+          data: toCreate.map((groupId) => ({
+            examGroupId: groupId,
+            examId: id,
+            position: 0,
+            weightage: 100.0,
+            isRequired: true,
+          })),
+        })
+      }
     }
   }
 

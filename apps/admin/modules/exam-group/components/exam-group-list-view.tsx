@@ -19,7 +19,7 @@ import { DeleteExamGroupModal } from "./delete-exam-group-modal"
 export function ExamGroupListView() {
   const router = useRouter()
   const [
-    { query, type, calculationType, academicClassId, isPublished, sort, page, limit },
+    { query, type, calculationType, academicClassId, isPublished, group, sort, page, limit },
     setSearchParams,
   ] = useExamGroupSearchParams()
 
@@ -37,6 +37,7 @@ export function ExamGroupListView() {
     type: type !== "All" ? type : undefined,
     academicClassId: academicClassId !== "All" ? academicClassId : undefined,
     isPublished: parsedIsPublished,
+    group: group !== "All" ? group : undefined,
     sort: sort !== "All" ? (sort as any) : undefined,
   })
 
@@ -99,9 +100,11 @@ export function ExamGroupListView() {
         onAcademicClassChange={(c) => setSearchParams({ academicClassId: c, page: 1 })}
         selectedIsPublished={isPublished}
         onIsPublishedChange={(p) => setSearchParams({ isPublished: p, page: 1 })}
+        selectedGroup={group}
+        onGroupChange={(g) => setSearchParams({ group: g, page: 1 })}
         selectedSort={sort}
         onSortChange={(st) => setSearchParams({ sort: st as any, page: 1 })}
-        onResetAll={() => setSearchParams({ query: "", type: "All", calculationType: "All", academicClassId: "All", isPublished: "All", sort: "All", page: 1 })}
+        onResetAll={() => setSearchParams({ query: "", type: "All", calculationType: "All", academicClassId: "All", isPublished: "All", group: "All", sort: "All", page: 1 })}
       />
 
       {/* Table Data */}

@@ -33,6 +33,7 @@ export const examGroupSearchParamsParsers = {
   calculationType: parseAsString.withDefault("All"),
   academicClassId: parseAsString.withDefault("All"),
   isPublished: parseAsString.withDefault("All"),
+  group: parseAsString.withDefault("All"),
   sort: parseAsStringEnum<ExamGroupSortOption>(Array.from(examGroupSortOptions)).withDefault("All"),
   page: parseAsInteger.withDefault(1),
   limit: parseAsInteger.withDefault(10),

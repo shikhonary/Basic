@@ -43,6 +43,7 @@ export const listExamGroupsSchema = paginationSchema.extend({
   academicClassId: z.string().optional(),
   isPublished: z.boolean().optional(),
   query: z.string().optional(),
+  group: z.string().optional(),
   sort: examGroupSortEnum.optional(),
   page: z.number().int().min(1).optional(),
 })
@@ -117,6 +118,7 @@ export const createExamGroupSchema = z.object({
   startDate: z.coerce.date().optional(),
   endDate: z.coerce.date().optional(),
   isPublished: z.boolean().default(false),
+  group: z.string().optional().nullable(),
   academicClassId: z.string().optional(),
   items: z.array(createExamGroupItemInputSchema).optional(),
 })
@@ -135,6 +137,7 @@ export const updateExamGroupSchema = z.object({
   startDate: z.coerce.date().optional().nullable(),
   endDate: z.coerce.date().optional().nullable(),
   isPublished: z.boolean().optional(),
+  group: z.string().optional().nullable(),
   academicClassId: z.string().optional().nullable(),
 })
 export type UpdateExamGroupInput = z.infer<typeof updateExamGroupSchema>
@@ -212,6 +215,7 @@ export const safeExamGroupSelect = {
   startDate: true,
   endDate: true,
   isPublished: true,
+  group: true,
   academicClassId: true,
   createdAt: true,
   updatedAt: true,

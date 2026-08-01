@@ -163,6 +163,7 @@ export function CreateExamGroupView() {
   const [totalMarks, setTotalMarks] = useState<number | "">("")
   const [passMarks, setPassMarks] = useState<number | "">("")
   const [academicClassId, setAcademicClassId] = useState<string>("none")
+  const [group, setGroup] = useState<string>("none")
   const [isPublished, setIsPublished] = useState(false)
   const [startDate, setStartDate] = useState<Date | undefined>(undefined)
   const [endDate, setEndDate] = useState<Date | undefined>(undefined)
@@ -231,6 +232,7 @@ export function CreateExamGroupView() {
         passMarks: passMarks !== "" ? Number(passMarks) : undefined,
         academicClassId: academicClassId !== "none" ? academicClassId : undefined,
         isPublished,
+        group: group !== "none" ? group : null,
         startDate: startDate || undefined,
         endDate: endDate || undefined,
         items: selectedExamItems.map((item, idx) => ({
@@ -320,6 +322,33 @@ export function CreateExamGroupView() {
                         {cls.nameEn} ({cls.level})
                       </SelectItem>
                     ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Target Academic Group Select */}
+            <div className="space-y-2">
+              <Label htmlFor="academic-group-select" className="block font-label-sm text-xs font-medium uppercase tracking-wider text-on-surface-variant">
+                Target Academic Group
+              </Label>
+              <div className="group relative">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors z-10 pointer-events-none">
+                  groups
+                </span>
+                <Select
+                  disabled={isSubmitting}
+                  value={group}
+                  onValueChange={(val) => setGroup(val ?? "none")}
+                >
+                  <SelectTrigger id="academic-group-select" className="w-full rounded-lg border border-outline-variant bg-white py-3 pl-10 pr-10 font-body-md text-on-surface transition-all cursor-pointer focus:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:outline-hidden h-auto justify-between">
+                    <SelectValue placeholder="Select Group (Optional)..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border border-outline-variant shadow-md rounded-lg">
+                    <SelectItem value="none">None / Common</SelectItem>
+                    <SelectItem value="Science">Science</SelectItem>
+                    <SelectItem value="Commerce">Commerce</SelectItem>
+                    <SelectItem value="Arts">Arts</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

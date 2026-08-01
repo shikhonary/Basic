@@ -15,7 +15,7 @@ import {
   DrawerTrigger,
 } from "@workspace/ui/components/drawer"
 import { useAcademicClassesForSelection } from "../../academic-class/services/use-academic-class"
-import { X, RotateCcw, SlidersHorizontal, ArrowUpDown, Filter, BookOpen, Layers, Calculator, CheckSquare } from "lucide-react"
+import { X, RotateCcw, SlidersHorizontal, ArrowUpDown, Filter, BookOpen, Layers, Calculator, CheckSquare, Users } from "lucide-react"
 
 interface ExamGroupFiltersProps {
   searchQuery: string
@@ -28,6 +28,8 @@ interface ExamGroupFiltersProps {
   onAcademicClassChange: (value: string) => void
   selectedIsPublished: string
   onIsPublishedChange: (value: string) => void
+  selectedGroup: string
+  onGroupChange: (value: string) => void
   selectedSort: string
   onSortChange: (value: string) => void
   onResetAll?: () => void
@@ -55,6 +57,14 @@ const publishOptions = [
   { label: "Draft Only", value: "false" },
 ]
 
+const groupOptions = [
+  { label: "All Groups", value: "All" },
+  { label: "Common Only", value: "Common" },
+  { label: "Science Only", value: "Science" },
+  { label: "Commerce Only", value: "Commerce" },
+  { label: "Arts Only", value: "Arts" },
+]
+
 const sortOptions = [
   { label: "Default Sort", value: "All" },
   { label: "Newest First", value: "newest" },
@@ -74,6 +84,8 @@ export function ExamGroupFilters({
   onAcademicClassChange,
   selectedIsPublished,
   onIsPublishedChange,
+  selectedGroup,
+  onGroupChange,
   selectedSort,
   onSortChange,
   onResetAll,
@@ -86,6 +98,7 @@ export function ExamGroupFilters({
   const hasActiveCalculationType = Boolean(selectedCalculationType && selectedCalculationType !== "All")
   const hasActiveAcademicClassId = Boolean(selectedAcademicClassId && selectedAcademicClassId !== "All")
   const hasActiveIsPublished = Boolean(selectedIsPublished && selectedIsPublished !== "All")
+  const hasActiveGroup = Boolean(selectedGroup && selectedGroup !== "All")
   const hasActiveSort = Boolean(selectedSort && selectedSort !== "All")
 
   const hasAnyFilter =
@@ -94,6 +107,7 @@ export function ExamGroupFilters({
     hasActiveCalculationType ||
     hasActiveAcademicClassId ||
     hasActiveIsPublished ||
+    hasActiveGroup ||
     hasActiveSort
 
   const activeFilterCount =
@@ -101,6 +115,7 @@ export function ExamGroupFilters({
     (hasActiveCalculationType ? 1 : 0) +
     (hasActiveAcademicClassId ? 1 : 0) +
     (hasActiveIsPublished ? 1 : 0) +
+    (hasActiveGroup ? 1 : 0) +
     (hasActiveSort ? 1 : 0)
 
   const handleResetAll = () => {
@@ -109,6 +124,7 @@ export function ExamGroupFilters({
     onCalculationTypeChange("All")
     onAcademicClassChange("All")
     onIsPublishedChange("All")
+    onGroupChange("All")
     onSortChange("All")
     if (onResetAll) onResetAll()
   }
@@ -127,6 +143,10 @@ export function ExamGroupFilters({
 
   const getPublishLabel = (pub: string) => {
     return publishOptions.find(o => o.value === pub)?.label || pub
+  }
+
+  const getGroupLabel = (grp: string) => {
+    return groupOptions.find(o => o.value === grp)?.label || grp
   }
 
   const getAcademicClassName = (classId: string) => {
@@ -229,6 +249,31 @@ export function ExamGroupFilters({
           </SelectTrigger>
           <SelectContent className="bg-white border border-outline-variant shadow-md rounded-lg">
             {publishOptions.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Group Filter */}
+      <div className={isMobile ? "space-y-1.5" : "min-w-[140px] flex-1 xl:flex-none"}>
+        {isMobile && (
+          <label className="text-xs font-bold text-on-surface flex items-center gap-1.5">
+            <Users className="h-3.5 w-3.5 text-primary" />
+            Academic Group
+          </label>
+        )}
+        <Select
+          value={selectedGroup}
+          onValueChange={(val) => onGroupChange(val ?? "All")}
+        >
+          <SelectTrigger className="w-full rounded-lg border border-outline-variant bg-white py-2.5 px-4 font-body-md text-sm outline-hidden focus:ring-2 focus:ring-primary/10 h-auto justify-between cursor-pointer">
+            <SelectValue placeholder="All Groups" />
+          </SelectTrigger>
+          <SelectContent className="bg-white border border-outline-variant shadow-md rounded-lg">
+            {groupOptions.map((opt) => (
               <SelectItem key={opt.value} value={opt.value}>
                 {opt.label}
               </SelectItem>
@@ -432,6 +477,24 @@ export function ExamGroupFilters({
                   onClick={() => onIsPublishedChange("All")}
                   className="rounded-full p-0.5 hover:bg-outline-variant/30 transition-colors cursor-pointer shrink-0"
                   title="Remove status filter"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            )}
+
+            {/* Academic Group Badge */}
+            {hasActiveGroup && (
+              <Badge
+                variant="secondary"
+                className="inline-flex items-center gap-1 rounded-md border border-outline-variant/40 bg-surface-container-high px-2 py-1 text-[11px] sm:text-xs font-medium text-on-surface hover:bg-surface-container-highest cursor-default normal-case tracking-normal shrink-0"
+              >
+                <span>Group: {getGroupLabel(selectedGroup)}</span>
+                <button
+                  type="button"
+                  onClick={() => onGroupChange("All")}
+                  className="rounded-full p-0.5 hover:bg-outline-variant/30 transition-colors cursor-pointer shrink-0"
+                  title="Remove group filter"
                 >
                   <X className="h-3 w-3" />
                 </button>

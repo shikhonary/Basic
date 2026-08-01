@@ -25,7 +25,6 @@ export const listExamsSchema = paginationSchema.extend({
   academicClassId: z.string().optional(),
   examGroupId: z.string().optional(),
   query: z.string().optional(),
-  group: z.string().optional(),
   sort: examSortEnum.optional(),
   page: z.number().int().min(1).optional(),
 })
@@ -60,11 +59,10 @@ export const createExamSchema = z.object({
   hasNegativeMark: z.boolean().default(false),
   negativeMark: z.number().default(0),
   type: z.string().min(1, "Exam type is required"),
-  group: z.string().optional().nullable(),
   status: z.string().default("Pending"),
   academicClassId: z.string().min(1, "Academic class is required"),
   subjectIds: z.array(z.string().min(1)).min(1, "At least one subject is required"),
-  examGroupId: z.string().optional(),
+  examGroupIds: z.array(z.string()).optional(),
 })
 
 export type CreateExamInput = z.infer<typeof createExamSchema>
@@ -82,10 +80,9 @@ export const updateExamSchema = z.object({
   hasNegativeMark: z.boolean().optional(),
   negativeMark: z.number().optional(),
   type: z.string().min(1).optional(),
-  group: z.string().optional().nullable(),
   status: z.string().optional(),
   academicClassId: z.string().min(1).optional(),
-  examGroupId: z.string().optional().nullable(),
+  examGroupIds: z.array(z.string()).optional().nullable(),
 })
 
 export type UpdateExamInput = z.infer<typeof updateExamSchema>
@@ -176,7 +173,6 @@ export const safeExamSelect = {
   hasNegativeMark: true,
   negativeMark: true,
   type: true,
-  group: true,
   status: true,
   academicClassId: true,
   createdAt: true,

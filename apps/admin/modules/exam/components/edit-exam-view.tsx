@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select"
+import { MultiSelect } from "@workspace/ui/components/multi-select"
 import {
   useExamById,
   useUpdateExam,
@@ -167,7 +168,6 @@ export function EditExamView({ examId }: EditExamViewProps) {
   const [title, setTitle] = useState("")
   const [type, setType] = useState("MCQ")
   const [status, setStatus] = useState("Pending")
-  const [group, setGroup] = useState("")
   const [total, setTotal] = useState<number | "">(100)
   const [duration, setDuration] = useState<number | "">(60)
   const [totalMcq, setTotalMcq] = useState<number | "">(50)
@@ -177,7 +177,7 @@ export function EditExamView({ examId }: EditExamViewProps) {
   const [hasRandom, setHasRandom] = useState(false)
   const [hasNegativeMark, setHasNegativeMark] = useState(false)
   const [negativeMark, setNegativeMark] = useState<number | "">(0.25)
-  const [examGroupId, setExamGroupId] = useState<string>("none")
+  const [examGroupIds, setExamGroupIds] = useState<string[]>([])
 
   // Fetch exam groups for selection
   const { data: examGroupsData } = useExamGroupsList({ limit: 100 })
@@ -191,9 +191,8 @@ export function EditExamView({ examId }: EditExamViewProps) {
   useEffect(() => {
     if (exam) {
       setTitle(exam.title ?? "")
-      setType(exam.type ?? "MCQ")
-      setStatus(exam.status ?? "Pending")
-      setGroup((exam as any).group ?? "none")
+      setType((exam as any).type || "MCQ")
+      setStatus((exam as any).status || "Pending")
       setAcademicClassId(exam.academicClassId ?? "")
       setIsOffline(Boolean((exam as any).isOffline))
       setTotal(exam.total ?? 100)
@@ -205,7 +204,7 @@ export function EditExamView({ examId }: EditExamViewProps) {
       setHasRandom(Boolean(exam.hasRandom))
       setHasNegativeMark(Boolean(exam.hasNegativeMark))
       setNegativeMark(exam.negativeMark ?? 0)
-      setExamGroupId((exam as any).examGroupItems?.[0]?.examGroupId || "none")
+      setExamGroupIds((exam as any).examGroupItems?.map((item: any) => item.examGroupId) || [])
     }
   }, [exam])
 
@@ -271,7 +270,6 @@ export function EditExamView({ examId }: EditExamViewProps) {
         title: title.trim(),
         type,
         status,
-        group: group !== "none" ? group || null : null,
         academicClassId,
         total: Number(total),
         duration: Number(duration),
@@ -282,7 +280,7 @@ export function EditExamView({ examId }: EditExamViewProps) {
         hasRandom,
         hasNegativeMark,
         negativeMark: hasNegativeMark ? Number(negativeMark) || 0 : 0,
-        examGroupId: examGroupId !== "none" ? examGroupId : null,
+        examGroupIds: examGroupIds.length > 0 ? examGroupIds : null,
       })
 
       toast.success(`Exam "${title.trim()}" updated successfully!`)
@@ -480,59 +478,29 @@ export function EditExamView({ examId }: EditExamViewProps) {
               </div>
             </div>
 
-            {/* Group */}
-            <div className="space-y-2">
-              <Label htmlFor="edit-exam-group-field" className="block font-label-sm text-xs font-medium uppercase tracking-wider text-on-surface-variant">
-                Group (Optional)
-              </Label>
-              <div className="group relative">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors z-10 pointer-events-none">
-                  category
-                </span>
-                <Select
-                  disabled={isSubmitting}
-                  value={group}
-                  onValueChange={(val) => setGroup(val ?? "none")}
-                >
-                  <SelectTrigger id="edit-exam-group-field" className="w-full rounded-lg border border-outline-variant bg-white py-3 pl-10 pr-10 font-body-md text-on-surface transition-all cursor-pointer focus:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:outline-hidden h-auto justify-between">
-                    <SelectValue placeholder="-- Select Group --" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white border border-outline-variant shadow-md rounded-lg">
-                    <SelectItem value="none">None / All Groups</SelectItem>
-                    <SelectItem value="Science">Science (বিজ্ঞান)</SelectItem>
-                    <SelectItem value="Commerce">Commerce (ব্যবসায় শিক্ষা)</SelectItem>
-                    <SelectItem value="Humanities">Humanities (মানবিক)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
 
-            {/* Attach to Exam Group Select */}
+
+            {/* Attach to Exam Group MultiSelect */}
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="edit-exam-group-select" className="block font-label-sm text-xs font-medium uppercase tracking-wider text-on-surface-variant">
-                Attach to Exam Group (Optional)
+                Attach to Exam Groups (Optional)
               </Label>
               <div className="group relative">
                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors z-10 pointer-events-none">
                   layers
                 </span>
-                <Select
-                  disabled={isSubmitting}
-                  value={examGroupId}
-                  onValueChange={(val) => setExamGroupId(val ?? "none")}
-                >
-                  <SelectTrigger id="edit-exam-group-select" className="w-full rounded-lg border border-outline-variant bg-white py-3 pl-10 pr-10 font-body-md text-on-surface transition-all cursor-pointer focus:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:outline-hidden h-auto justify-between">
-                    <SelectValue placeholder="None / Standalone Exam..." />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white border border-outline-variant shadow-md rounded-lg">
-                    <SelectItem value="none">None / Standalone Exam</SelectItem>
-                    {availableExamGroups.map((eg) => (
-                      <SelectItem key={eg.id} value={eg.id}>
-                        {eg.title} ({eg.type.replace("_", " ")})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="pl-10">
+                  <MultiSelect
+                    disabled={isSubmitting}
+                    placeholder="Search/Select Exam Groups..."
+                    options={availableExamGroups.map((eg) => ({
+                      label: `${eg.title} (${eg.type.replace("_", " ")})`,
+                      value: eg.id,
+                    }))}
+                    value={examGroupIds}
+                    onChange={(vals) => setExamGroupIds(vals)}
+                  />
+                </div>
               </div>
             </div>
           </div>

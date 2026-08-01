@@ -47,6 +47,12 @@ const GROUP_TYPE_ICON_COLOR: Record<string, string> = {
   SUBJECT_COMBO: "text-amber-500",
 }
 
+const GROUP_BENGALI_LABELS: Record<string, string> = {
+  Science: "বিজ্ঞান",
+  Commerce: "বাণিজ্য",
+  Arts: "মানবিক",
+}
+
 function formatDate(date: Date | string | null) {
   if (!date) return null
   return new Date(date).toLocaleDateString("bn-BD", {
@@ -187,12 +193,22 @@ export function ExamGroupListView() {
                         </p>
                       )}
                     </div>
-                    <Badge
-                      variant="outline"
-                      className={`rounded-lg px-2.5 py-1 text-[11px] font-semibold shrink-0 ${typeColor}`}
-                    >
-                      {typeLabel}
-                    </Badge>
+                    <div className="flex flex-col items-end gap-1.5 shrink-0">
+                      <Badge
+                        variant="outline"
+                        className={`rounded-lg px-2.5 py-1 text-[11px] font-semibold shrink-0 ${typeColor}`}
+                      >
+                        {typeLabel}
+                      </Badge>
+                      {group.group && (
+                        <Badge
+                          variant="outline"
+                          className="rounded-lg px-2.5 py-1 text-[11px] font-semibold shrink-0 border-teal-500/30 bg-teal-500/10 text-teal-700 dark:text-teal-300"
+                        >
+                          {GROUP_BENGALI_LABELS[group.group] ?? group.group}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
 
                   {/* Stats row */}

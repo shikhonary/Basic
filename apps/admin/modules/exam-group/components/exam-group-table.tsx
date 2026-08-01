@@ -72,6 +72,7 @@ export interface ExamGroupItemData {
     groupResults: number
   }
   createdAt?: string | Date | null
+  group?: string | null
 }
 
 function getPageNumbers(currentPage: number, totalPages: number) {
@@ -163,6 +164,19 @@ export function ExamGroupTable({
         return "bg-cyan-500/10 text-cyan-700 border-cyan-200/50"
       case "AVERAGE":
         return "bg-emerald-500/10 text-emerald-700 border-emerald-200/50"
+      default:
+        return "bg-slate-500/10 text-slate-700 border-slate-200/50"
+    }
+  }
+
+  const getGroupBadgeClass = (group: string | null | undefined) => {
+    switch (group) {
+      case "Science":
+        return "bg-emerald-500/10 text-emerald-700 border-emerald-200/50"
+      case "Commerce":
+        return "bg-blue-500/10 text-blue-700 border-blue-200/50"
+      case "Arts":
+        return "bg-amber-500/10 text-amber-700 border-amber-200/50"
       default:
         return "bg-slate-500/10 text-slate-700 border-slate-200/50"
     }
@@ -267,6 +281,11 @@ export function ExamGroupTable({
                       <Badge className="inline-flex items-center rounded-full bg-secondary-container/10 px-2 py-0.5 font-label-sm text-[10px] font-bold uppercase text-secondary border-0 shadow-none">
                         {item.academicClass ? item.academicClass.nameEn : "Global"}
                       </Badge>
+                      {item.group && (
+                        <Badge variant="outline" className={`inline-flex items-center px-2 py-0.5 font-label-sm text-[10px] font-medium border uppercase ${getGroupBadgeClass(item.group)}`}>
+                          {item.group}
+                        </Badge>
+                      )}
                       <Badge variant="outline" className={`inline-flex items-center px-2 py-0.5 font-label-sm text-[10px] font-medium border uppercase ${getTypeBadgeClass(item.type)}`}>
                         {item.type.replace("_", " ")}
                       </Badge>
@@ -382,6 +401,9 @@ export function ExamGroupTable({
                 Class
               </TableHead>
               <TableHead className="px-4 py-4 font-label-sm font-semibold tracking-wider text-outline uppercase h-auto">
+                Group
+              </TableHead>
+              <TableHead className="px-4 py-4 font-label-sm font-semibold tracking-wider text-outline uppercase h-auto">
                 Type
               </TableHead>
               <TableHead className="px-4 py-4 font-label-sm font-semibold tracking-wider text-outline uppercase h-auto">
@@ -436,6 +458,17 @@ export function ExamGroupTable({
                       </Badge>
                     ) : (
                       <span className="text-xs text-outline italic">Global / All</span>
+                    )}
+                  </TableCell>
+                  
+                  {/* Group */}
+                  <TableCell className="py-5 group-hover:py-6 px-4 transition-all duration-200 ease-in-out">
+                    {item.group ? (
+                      <Badge variant="outline" className={`text-xs font-medium border uppercase ${getGroupBadgeClass(item.group)}`}>
+                        {item.group}
+                      </Badge>
+                    ) : (
+                      <span className="text-xs text-outline italic">Common</span>
                     )}
                   </TableCell>
 
