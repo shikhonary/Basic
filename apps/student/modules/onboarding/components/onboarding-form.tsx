@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select"
+import { RadioGroup, RadioGroupItem } from "@workspace/ui/components/radio-group"
 
 // Regex pattern matching English characters, whitespace, dots, and hyphens
 const ENGLISH_REGEX = /^[A-Za-z\s.\-]+$/
@@ -42,8 +43,8 @@ const onboardingSchema = z.object({
     ),
   institute: z.string().min(1, "শিক্ষা প্রতিষ্ঠানের নাম প্রদান করা আবশ্যক"),
   academicClassId: z.string().min(1, "শ্রেণি নির্বাচন করুন"),
-  roll: z.string().optional().refine((val) => !val || (!isNaN(Number(val)) && Number(val) > 0), {
-    message: "সঠিক রোল নম্বর দিন",
+  isOfflineStudent: z.boolean({
+    required_error: "অফলাইন ব্যাচ এ ক্লাস করেন কি না তা নির্ধারণ করুন",
   }),
   group: z.string().optional(),
 })
@@ -71,7 +72,7 @@ export function OnboardingForm() {
       phone: "",
       institute: "",
       academicClassId: "",
-      roll: "",
+      isOfflineStudent: false,
       group: "",
     },
   })
@@ -113,8 +114,9 @@ export function OnboardingForm() {
       phone: data.phone.trim(),
       institute: data.institute.trim(),
       academicClassId: data.academicClassId,
-      roll: data.roll ? parseInt(data.roll, 10) : undefined,
+      isOfflineStudent: data.isOfflineStudent,
       group: data.group ? data.group.trim() : undefined,
+      isProfileConfirmed: true,
     })
   }
 
@@ -302,25 +304,46 @@ export function OnboardingForm() {
                   )}
                 </div>
 
-                {/* Roll */}
+                {/* isOfflineStudent Radio Group */}
                 <div className="space-y-2">
                   <Label className="block font-label-sm text-xs font-semibold tracking-wider text-on-surface-variant">
-                    শ্রেণি রোল (ঐচ্ছিক)
+                    আপনি কি অফলাইন ব্যাচ এ ক্লাস করেন? <span className="text-error">*</span>
                   </Label>
-                  <div className="group relative">
-                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors z-10">
-                      tag
-                    </span>
-                    <Input
-                      type="number"
-                      disabled={isPending}
-                      placeholder="যেমন: ১০২"
-                      {...register("roll")}
-                      className="w-full rounded-lg border border-outline-variant py-3 pl-10 pr-4 font-body-md text-on-surface transition-all bg-white focus:border-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:outline-hidden h-auto"
-                    />
-                  </div>
-                  {errors.roll && (
-                    <p className="text-xs text-error">{errors.roll.message}</p>
+                  <Controller
+                    name="isOfflineStudent"
+                    control={control}
+                    render={({ field }) => (
+                      <RadioGroup
+                        disabled={isPending}
+                        value={field.value ? "true" : "false"}
+                        onValueChange={(val) => field.onChange(val === "true")}
+                        className="flex items-center gap-6 mt-1 bg-white border border-outline-variant/60 rounded-lg p-2.5 px-4 h-11"
+                      >
+                        <div className="flex items-center gap-2">
+                          <RadioGroupItem
+                            value="true"
+                            id="offline-yes"
+                            className="cursor-pointer border-outline-variant text-primary data-[state=checked]:border-primary"
+                          />
+                          <Label htmlFor="offline-yes" className="text-xs sm:text-sm font-medium cursor-pointer text-on-surface">
+                            হ্যাঁ
+                          </Label>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <RadioGroupItem
+                            value="false"
+                            id="offline-no"
+                            className="cursor-pointer border-outline-variant text-primary data-[state=checked]:border-primary"
+                          />
+                          <Label htmlFor="offline-no" className="text-xs sm:text-sm font-medium cursor-pointer text-on-surface">
+                            না
+                          </Label>
+                        </div>
+                      </RadioGroup>
+                    )}
+                  />
+                  {errors.isOfflineStudent && (
+                    <p className="text-xs text-error">{errors.isOfflineStudent.message}</p>
                   )}
                 </div>
               </div>

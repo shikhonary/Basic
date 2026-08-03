@@ -76,6 +76,7 @@ export async function completeStudentOnboarding(
         data: {
           ...input,
           userId,
+          isProfileConfirmed: true,
         },
         select: safeStudentSelect,
       })

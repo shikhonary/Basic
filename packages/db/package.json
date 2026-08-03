@@ -15,6 +15,7 @@
     "seed:tenant": "node --loader ts-node/esm prisma/seed/tenant.seed.ts",
     "assign-super-admin": "npx tsx prisma/seed/assign-super-admin.ts",
     "update-students-group": "npx tsx prisma/seed/update-students-group.ts",
+    "verify-users": "npx tsx prisma/seed/verify-users.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

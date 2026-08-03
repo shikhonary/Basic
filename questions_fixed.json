@@ -1,0 +1,790 @@
+[
+{
+"question": "আমাদের গ্যালাক্সির বাংলা নাম কী?",
+"answer": "ছায়াপথ",
+"options": [
+"ছায়াপথ",
+"নীহারিকা",
+"অ্যান্ড্রোমিডা",
+"ধ্রুব"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [],
+"context": null
+},
+{
+"question": "চলন্ত ট্রেনে দুই বন্ধু মুখোমুখি বসে থাকে, তবে একজনের সাপেক্ষে অন্যজনের অবস্থানকে কী বলে?",
+"answer": "আপেক্ষিক স্থিতি",
+"options": [
+"আপেক্ষিক স্থিতি",
+"আপেক্ষিক গতি",
+"স্থিতি",
+"চলন"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [],
+"context": null
+},
+{
+"question": "যে বিন্দুর সাপেক্ষে কোনো বস্তুর অবস্থান নির্ণয় করা হয়, তাকে কী বলে?",
+"answer": "প্রসঙ্গ কাঠামো",
+"options": [
+"প্রসঙ্গ কাঠামো",
+"মূলবিন্দু",
+"আপেক্ষিক বিন্দু",
+"আপাত বিন্দু"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [],
+"context": null
+},
+{
+"question": "সময়ের পরিবর্তনের সাথে পারিপার্শ্বের সাপেক্ষে অবস্থানের পরিবর্তন হওয়াকে কী বলে?",
+"answer": "গতি",
+"options": [
+"স্থিতি",
+"গতি",
+"পরম স্থিতি",
+"পরম গতি"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [],
+"context": null
+},
+{
+"question": "দুটি বাস একই বেগে পাশাপাশি চলছে। একটি বাসের সাপেক্ষে অপর বাস-",
+"answer": "আপেক্ষিক স্থিতিশীল",
+"options": [
+"পরম স্থিতিশীল",
+"পরম গতিশীল",
+"আপেক্ষিক স্থিতিশীল",
+"আপেক্ষিক গতিশীল"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [],
+"context": null
+},
+{
+"question": "কোনো বস্তু যদি সরলরেখা বরাবর গতিশীল হয়, তাহলে তার গতিকে কী বলে?",
+"answer": "রৈখিক গতি",
+"options": [
+"রৈখিক গতি",
+"পর্যায়বৃত্ত গতি",
+"ঘূর্ণন গতি",
+"স্পন্দন গতি"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [],
+"context": null
+},
+{
+"question": "একটি সোজা সড়কে কোনো গাড়ির গতি কোন গতি?",
+"answer": "রৈখিক গতি",
+"options": [
+"রৈখিক গতি",
+"ঘূর্ণন গতি",
+"পর্যায়বৃত্ত গতি",
+"স্পন্দন গতি"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [],
+"context": null
+},
+{
+"question": "একটি বাসকে ধাক্কা দিলে এটি না উল্টিয়ে যে গতি লাভ করে তা-",
+"answer": "চলন গতি",
+"options": [
+"বক্রগতি",
+"স্পন্দন গতি",
+"চলন গতি",
+"ঘূর্ণন গতি"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [],
+"context": null
+},
+{
+"question": "ঘূর্ণয়মান চাকা বিবেচনায় না আনলে সোজা পথে এগিয়ে যাওয়া একটি গাড়ির গতি-",
+"answer": "চলন গতি",
+"options": [
+"চলন গতি",
+"ঘূর্ণন গতি",
+"পর্যায়বৃত্ত গতি",
+"সরল স্পন্দন গতি"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [
+"ম.বো. ২১"
+],
+"context": null
+},
+{
+"question": "কোন গতি বৃত্তাকার, উপবৃত্তাকার বা সরলরেখিত হতে পারে?",
+"answer": "পর্যায়বৃত্ত গতি",
+"options": [
+"রৈখিক গতি",
+"ঘূর্ণন গতি",
+"চলন গতি",
+"পর্যায়বৃত্ত গতি"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [
+"ব.বো. ২০"
+],
+"context": null
+},
+{
+"question": "ঘড়ির কাঁটার গতি কীরূপ পর্যায়বৃত্ত গতি?",
+"answer": "বৃত্তাকার",
+"options": [
+"বৃত্তাকার",
+"বক্রাকার",
+"উপবৃত্তাকার",
+"সরলরেখিত"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [],
+"context": null
+},
+{
+"question": "সাইকেলের প্যাডেলের গতি কোন ধরনের গতি?",
+"answer": "ঘূর্ণন গতি",
+"options": [
+"চলন গতি",
+"দোলন গতি",
+"স্পন্দন গতি",
+"ঘূর্ণন গতি"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [
+"দি.বো. ২৫"
+],
+"context": null
+},
+{
+"question": "সূর্যের চারদিকে পৃথিবী গতি কোন ধরণের গতি?",
+"answer": "পর্যায়বৃত্ত গতি",
+"options": [
+"চলন গতি",
+"পর্যায়বৃত্ত গতি",
+"ঘূর্ণন গতি",
+"স্পন্দন গতি"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [
+"রা.বো. ১৯"
+],
+"context": null
+},
+{
+"question": "ঘড়ির কাঁটার গতি কেমন গতি?",
+"answer": "ঘূর্ণন গতি",
+"options": [
+"রৈখিক গতি",
+"চলন গতি",
+"ঘূর্ণন গতি",
+"স্পন্দন গতি"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [],
+"context": null
+},
+{
+"question": "হৃৎপিণ্ডের সংকোচন ও প্রসারণ কোন ধরনের গতি? অথবা, হৃৎপিণ্ডের সংকোচন-প্রসারণ কোন ধরনের গতি?",
+"answer": "পর্যায়বৃত্ত গতি",
+"options": [
+"স্পন্দন গতি",
+"চলন গতি",
+"ঘূর্ণন গতি",
+"পর্যায়বৃত্ত গতি"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [
+"রা.বো. ২৪",
+"রা.বো. ২৩"
+],
+"context": null
+},
+{
+"question": "কোনটি পর্যায়বৃত্ত গতির উদাহরণ নয়?",
+"answer": "পড়ন্ত বস্তুর গতি",
+"options": [
+"হৃৎপিণ্ডের স্পন্দন",
+"সরল দোলকের গতি",
+"ঘড়ির কাঁটার গতি",
+"পড়ন্ত বস্তুর গতি"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [],
+"context": null
+},
+{
+"question": "পেট্রোল ইঞ্জিনের সিলিন্ডারের মধ্যে পিস্টনের গতি কোন ধরনের গতি?",
+"answer": "পর্যায়বৃত্ত গতি",
+"options": [
+"রৈখিক গতি",
+"ঘূর্ণন গতি",
+"চলন গতি",
+"পর্যায়বৃত্ত গতি"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [
+"চ.বো. ১৭"
+],
+"context": null
+},
+{
+"question": "স্প্রিং এ ঝুলানো দুলতে থাকা বস্তুর গতি কিরূপ?",
+"answer": "স্পন্দন গতি",
+"options": [
+"পর্যায়বৃত্ত গতি",
+"স্পন্দন গতি",
+"পর্যায় গতি",
+"ঘূর্ণন গতি"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [
+"য.বো. ২১",
+"কু.বো. ২১",
+"য.বো. ১৫"
+],
+"context": null
+},
+{
+"question": "বৈদ্যুতিক পাখার গতি কী রকম গতি?",
+"answer": "ঘূর্ণন গতি",
+"options": [
+"পর্যায়বৃত্ত গতি",
+"ঘূর্ণন গতি",
+"রৈখিক গতি",
+"স্পন্দন গতি"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [
+"চ.বো. ২১"
+],
+"context": null
+},
+{
+"question": "নিচের কোনটি ঘূর্ণন গতি?",
+"answer": "বৈদ্যুতিক পাখার গতি",
+"options": [
+"সরল দোলকের গতি",
+"সুরশলাকার গতি",
+"পৃথিবীর গতি",
+"বৈদ্যুতিক পাখার গতি"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [],
+"context": null
+},
+{
+"question": "চলন্ত ফ্যানের সুইচ বন্ধ করে দিলে ফ্যানের পাখার গতি কোন ধরনের?",
+"answer": "পর্যায়বৃত্ত",
+"options": [
+"ঘূর্ণন",
+"পর্যায়বৃত্ত",
+"চলন",
+"স্পন্দন"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [
+"চ.বো. ২২"
+],
+"context": null
+},
+{
+"question": "সমবেগে চলমান সাইকেলের চাকার গতি কোন ধরনের?",
+"answer": "পর্যায়বৃত্ত",
+"options": [
+"রৈখিক",
+"পর্যায়বৃত্ত",
+"স্পন্দন",
+"চলন"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [
+"কু.বো. ২৩"
+],
+"context": null
+},
+{
+"question": "সমত্বরণে চলমান গাড়ির চাকার গতি কী ধরনের?",
+"answer": "পর্যায়বৃত্ত",
+"options": [
+"ঘূর্ণন",
+"চলন",
+"পর্যায়বৃত্ত",
+"স্পন্দন"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [
+"চ.বো. ২৩"
+],
+"context": null
+},
+{
+"question": "দোলনায় দুলতে থাকা শিশুর গতি হলো-",
+"answer": "সরল স্পন্দন গতি",
+"options": [
+"ঘূর্ণন গতি",
+"চলন গতি",
+"পর্যায়বৃত্ত গতি",
+"সরল স্পন্দন গতি"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [
+"চ.বো. ২০"
+],
+"context": null
+},
+{
+"question": "স্প্রিং থেকে দুলিয়ে দেওয়া বস্তুর গতি কোনটি?",
+"answer": "সরল স্পন্দন গতি",
+"options": [
+"পর্যাবৃত্ত গতি",
+"সরল স্পন্দন গতি",
+"চলন গতি",
+"সরল রৈখিক গতি"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [
+"দি.বো. ২০"
+],
+"context": null
+},
+{
+"question": "স্প্রিং থেকে ঝুলিয়ে দেওয়া একটা বস্তুর গতি হচ্ছে-",
+"answer": "স্পন্দন গতি",
+"options": [
+"চলন গতি",
+"ঘূর্ণন গতি",
+"সরলরৈখিক গতি",
+"স্পন্দন গতি"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [
+"ঢা.বো. ২৪"
+],
+"context": null
+},
+{
+"question": "গিটারের তারের গতি কোন ধরনের গতি?",
+"answer": "স্পন্দন",
+"options": [
+"স্পন্দন",
+"পর্যাবৃত্ত",
+"চলন",
+"ঘূর্ণন"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [
+"দি.বো. ২৪"
+],
+"context": null
+},
+{
+"question": "সরল দোলকের গতি কী রকম গতি?",
+"answer": "স্পন্দন",
+"options": [
+"রৈখিক",
+"উপবৃত্তাকার",
+"ঘূর্ণন",
+"স্পন্দন"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [
+"ব.বো. ১৫"
+],
+"context": null
+},
+{
+"question": "নিচের কোনটি স্পন্দন গতির উদাহরণ নয়?",
+"answer": "ঘড়ির কাঁটার গতি",
+"options": [
+"সরল দোলকের গতি",
+"কম্পনশীল সুরশলাকার গতি",
+"গিটারের তারের গতি",
+"ঘড়ির কাঁটার গতি"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [],
+"context": null
+},
+{
+"question": "আমাদের পরিচিত জগতে যা কিছু পরিমাপ করা যায়, তাকে কী বলে?",
+"answer": "রাশি",
+"options": [
+"পরিমাপক",
+"একক",
+"দূরত্ব",
+"রাশি"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [],
+"context": null
+},
+{
+"question": "দিকের বিবেচনায় রাশিকে কত ভাগে ভাগ করা যায়?",
+"answer": "২",
+"options": [
+"২",
+"৩",
+"৪",
+"৫"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [],
+"context": null
+},
+{
+"question": "নিচের কোনটি ভেক্টর রাশির মান নির্দেশ করে?",
+"answer": "$A$",
+"options": [
+"$A$",
+"$\\vec{A}$",
+"$\\underline{A}$",
+"$\\hat{A}$"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": true,
+"reference": [],
+"context": null
+},
+{
+"question": "নিচের কোনটি ভেক্টর রাশি নির্দেশ করে?",
+"answer": "$\\vec{A}$",
+"options": [
+"$A$",
+"$\\vec{A}$",
+"$\\underline{A}$",
+"$\\hat{A}$"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": true,
+"reference": [],
+"context": null
+},
+{
+"question": "নিচের কোনটি সত্য?",
+"answer": "$A = B$",
+"options": [
+"$A \\ne B$",
+"$C = D$",
+"$A = B$",
+"$A = C$"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": true,
+"reference": [],
+"context": null
+},
+{
+"question": "নিচের কোন রাশিটি স্কেলার?",
+"answer": "চাপ",
+"options": [
+"সরণ",
+"ত্বরণ",
+"ভরবেগ",
+"চাপ"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [
+"ঢা.বো. ২৫",
+"ব.বো. ২৫",
+"চ.বো. ২৩",
+"চ.বো. ১৭"
+],
+"context": null
+},
+{
+"question": "নিচের কোনটি ভেক্টর রাশি?",
+"answer": "তড়িৎ ক্ষেত্র",
+"options": [
+"শক্তি",
+"তড়িৎ ক্ষেত্র",
+"চাপ",
+"তাপমাত্রা"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [
+"কু.বো. ২৫"
+],
+"context": null
+},
+{
+"question": "নিচের কোনটি ভেক্টর রাশি?",
+"answer": "সরণ",
+"options": [
+"দ্রুতি",
+"সরণ",
+"বিভব",
+"তড়িৎ প্রবাহ"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [
+"য.বো. ২১"
+],
+"context": null
+},
+{
+"question": "নিচের কোন রাশিদ্বয় ভেক্টর রাশি?",
+"answer": "সরণ, বেগ",
+"options": [
+"ত্বরণ, দ্রুতি",
+"ভর, সময়",
+"সরণ, বেগ",
+"চাপ, দীপন তীব্রতা"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [
+"কু.বো. ২৪"
+],
+"context": null
+},
+{
+"question": "নিচের কোনটি স্কেলার রাশি?",
+"answer": "শক্তি",
+"options": [
+"বেগ",
+"বল",
+"ত্বরণ",
+"শক্তি"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [
+"ম.বো. ২২",
+"চ.বো. ১৫"
+],
+"context": null
+},
+{
+"question": "কোনটি স্কেলার রাশি?",
+"answer": "দ্রুতি",
+"options": [
+"বেগ",
+"দ্রুতি",
+"সরণ",
+"ত্বরণ"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [
+"ঢা.বো. ২১"
+],
+"context": null
+},
+{
+"question": "নিচের কোন রাশিগুলো ভেক্টর রাশি?",
+"answer": "ভরবেগ, সরণ ও ওজন",
+"options": [
+"দ্রুতি, কাজ ও বেগ",
+"তড়িৎ বিভব, সরণ ও ত্বরণ",
+"দ্রুতি, সরণ ও বেগ",
+"ভরবেগ, সরণ ও ওজন"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [
+"য.বো. ২২"
+],
+"context": null
+},
+{
+"question": "নিচের কোনগুলো স্কেলার রাশি?",
+"answer": "কাজ, ক্ষমতা",
+"options": [
+"কাজ, ক্ষমতা",
+"বেগ, ভরবেগ",
+"সরণ, বল",
+"ত্বরণ, প্লবতা"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [
+"ব.বো. ২২"
+],
+"context": null
+},
+{
+"question": "নিচের কোনটি স্কেলার রাশি?",
+"answer": "কাজ",
+"options": [
+"সরণ",
+"কাজ",
+"বল",
+"ত্বরণ"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [
+"সি.বো. ২২"
+],
+"context": null
+},
+{
+"question": "নিচের কোনটি ভেক্টর রাশি?",
+"answer": "সরণ",
+"options": [
+"সরণ",
+"দূরত্ব",
+"সময়",
+"দ্রুতি"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [
+"দি.বো. ২২"
+],
+"context": null
+},
+{
+"question": "কোনটি ভেক্টর রাশি?",
+"answer": "প্লবতা",
+"options": [
+"কাজ",
+"চাপ",
+"প্লবতা",
+"দ্রুতি"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [
+"দি.বো. ১৯"
+],
+"context": null
+},
+{
+"question": "নিচের কোনটি ভেক্টর রাশি?",
+"answer": "বল",
+"options": [
+"তাপমাত্রা",
+"কাজ",
+"বল",
+"ভর"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [
+"ব.বো. ২১",
+"দি.বো. ২১"
+],
+"context": null
+},
+{
+"question": "নিচের কোনটি ভেক্টর রাশি?",
+"answer": "সরণ",
+"options": [
+"দৈর্ঘ্য",
+"দূরত্ব",
+"সরণ",
+"দ্রুতি"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [
+"দি.বো. ১৫"
+],
+"context": null
+},
+{
+"question": "কোনটি ভেক্টর রাশি?",
+"answer": "ভরবেগ",
+"options": [
+"শক্তি",
+"সময়",
+"ভরবেগ",
+"তাপমাত্রা"
+],
+"statements": [],
+"type": "SINGLE",
+"isMath": false,
+"reference": [
+"ঢা.বো. ১৬"
+],
+"context": null
+}
+]

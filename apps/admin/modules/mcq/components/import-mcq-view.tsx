@@ -67,6 +67,60 @@ export function repairJsonSyntax(raw: string): string {
     cleaned = `[\n${cleaned}\n]`
   }
 
+  // 6. Escape unescaped backslashes in JSON strings (e.g., LaTeX formulas like \vec or \underline)
+  let escaped = ""
+  let inString = false
+  for (let i = 0; i < cleaned.length; i++) {
+    const char = cleaned[i]
+    if (char === '"') {
+      let backslashCount = 0
+      let idx = i - 1
+      while (idx >= 0 && cleaned[idx] === '\\') {
+        backslashCount++
+        idx--
+      }
+      if (backslashCount % 2 === 0) {
+        inString = !inString
+      }
+      escaped += char
+    } else if (char === '\\' && inString) {
+      const nextChar = cleaned[i + 1]
+      let isValidEscape = false
+      if (
+        nextChar === '"' ||
+        nextChar === '\\' ||
+        nextChar === '/' ||
+        nextChar === 'b' ||
+        nextChar === 'f' ||
+        nextChar === 'n' ||
+        nextChar === 'r' ||
+        nextChar === 't'
+      ) {
+        isValidEscape = true
+      } else if (nextChar === 'u') {
+        const sub = cleaned.slice(i + 2, i + 6)
+        if (sub.length === 4 && /^[0-9a-fA-F]{4}$/.test(sub)) {
+          isValidEscape = true
+        }
+      }
+
+      if (isValidEscape) {
+        escaped += '\\' + nextChar
+        if (nextChar === 'u') {
+          escaped += cleaned.slice(i + 2, i + 6)
+          i += 5
+        } else {
+          i += 1
+        }
+      } else {
+        escaped += '\\\\'
+      }
+    } else {
+      escaped += char
+    }
+  }
+  cleaned = escaped
+
   return cleaned
 }
 

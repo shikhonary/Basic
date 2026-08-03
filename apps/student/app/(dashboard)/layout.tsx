@@ -3,7 +3,6 @@ import { headers } from "next/headers"
 import { auth } from "@workspace/auth/server"
 import { db } from "@workspace/db/main"
 import { AdminShell } from "@/components/layout"
-import { ProfileConfirmationModal } from "@/modules/profile/components/ProfileConfirmationModal"
 
 /**
  * Dashboard layout — Server Component auth gate.
@@ -56,7 +55,6 @@ export default async function DashboardLayout({
 
   return (
     <AdminShell>
-      <ProfileConfirmationModal />
       {children}
     </AdminShell>
   )

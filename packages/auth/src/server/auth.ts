@@ -126,27 +126,6 @@ export const auth = betterAuth({
         },
       },
     },
-    session: {
-      create: {
-        before: async (session, ctx) => {
-          const body = ctx?.body as { rememberMe?: boolean } | undefined
-          const rememberMe = body?.rememberMe
-
-          // If rememberMe is not checked, shorten database session lifetime to 7 days
-          if (!rememberMe) {
-            const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 7)
-            return {
-              data: {
-                ...session,
-                expiresAt,
-              },
-            }
-          }
-
-          return { data: session }
-        },
-      },
-    },
   },
 
   emailAndPassword: {
