@@ -448,6 +448,7 @@ export async function calculateExamGroupResults(
     status: string
     examsAttempted: number
     totalExamsInGroup: number
+    rawTotalObtained: number
   }> = []
 
   const totalExamsInGroup = group.items.length
@@ -472,6 +473,7 @@ export async function calculateExamGroupResults(
     }
 
     const examsAttempted = examScoreList.length
+    const rawTotalObtained = examScoreList.reduce((acc, curr) => acc + curr.obtained, 0)
 
     if (group.calculationType === "SUM") {
       // Direct sum of obtained scores vs group total marks or sum of exams max
@@ -513,16 +515,31 @@ export async function calculateExamGroupResults(
       status,
       examsAttempted,
       totalExamsInGroup,
+      rawTotalObtained,
     })
   }
 
-  // Sort by totalObtainedMarks descending to assign merit rank positions
-  calculatedResults.sort((a, b) => b.totalObtainedMarks - a.totalObtainedMarks)
+  // Sort by raw total obtained marks descending to assign merit rank positions
+  // This ensures students with more raw marks across all exams are ranked higher,
+  // regardless of calculationType (e.g. AVERAGE) which might skew scores for fewer attempts.
+  calculatedResults.sort((a, b) => {
+    if (b.rawTotalObtained !== a.rawTotalObtained) {
+      return b.rawTotalObtained - a.rawTotalObtained
+    }
+    return b.totalObtainedMarks - a.totalObtainedMarks
+  })
 
-  // Upsert results with merit ranks into DB
+  // Upsert results with merit ranks into DB, and clean up any ghost records
   const now = new Date()
-  await db.$transaction(
-    calculatedResults.map((res, index) =>
+  await db.$transaction([
+    // Remove old results for students who no longer have valid attempts in this group
+    db.examGroupResult.deleteMany({
+      where: {
+        examGroupId: group.id,
+        studentId: { notIn: calculatedResults.map((r) => r.studentId) },
+      },
+    }),
+    ...calculatedResults.map((res, index) =>
       db.examGroupResult.upsert({
         where: {
           examGroupId_studentId: {
@@ -553,8 +570,8 @@ export async function calculateExamGroupResults(
           calculatedAt: now,
         },
       })
-    )
-  )
+    ),
+  ])
 
   return {
     success: true,

@@ -13,6 +13,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@workspace/ui/components/select"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@workspace/ui/components/dialog"
 import { toast } from "@workspace/ui/components/sonner"
 import {
   useExamGroupById,
@@ -36,6 +43,7 @@ import {
   XCircle,
   FileText,
   User,
+  Copy,
 } from "lucide-react"
 
 interface ExamGroupDetailViewProps {
@@ -70,6 +78,8 @@ export function ExamGroupDetailView({ id }: ExamGroupDetailViewProps) {
   )
 
   const [selectedExamToAdd, setSelectedExamToAdd] = useState<string>("none")
+  const [copyModalOpen, setCopyModalOpen] = useState(false)
+  const [copyCount, setCopyCount] = useState(1)
 
   const handleAddExam = async () => {
     if (!selectedExamToAdd || selectedExamToAdd === "none") return
@@ -121,6 +131,46 @@ export function ExamGroupDetailView({ id }: ExamGroupDetailViewProps) {
       toast.success(`Group ${!groupData.isPublished ? "published" : "moved to draft"}`)
     } catch (err: any) {
       toast.error(err.message || "Failed to toggle publish status")
+    }
+  }
+
+  const handleCopyTopResults = async () => {
+    if (!resultsData?.items || resultsData.items.length === 0) {
+      toast.error("No results available to copy")
+      return
+    }
+
+    const topResults = resultsData.items
+      .slice()
+      .sort((a: any, b: any) => (a.meritPosition || 999999) - (b.meritPosition || 999999))
+      .slice(0, copyCount)
+
+    if (topResults.length === 0) {
+      toast.error("No top results found")
+      return
+    }
+
+    const payload = topResults.map((result: any) => ({
+      studentId: result.studentId,
+      studentName: result.student?.name || "Student",
+      studentRoll: result.student?.roll || "",
+      meritPosition: result.meritPosition,
+      examsAttempted: result.examsAttempted,
+      totalExamsInGroup: result.totalExamsInGroup,
+      totalObtainedMarks: result.totalObtainedMarks,
+      totalMaxMarks: result.totalMaxMarks,
+      percentage: result.percentage,
+      gpa: result.gpa,
+      grade: result.grade,
+      status: result.status,
+    }))
+
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(payload, null, 2))
+      toast.success(`Top ${topResults.length} result(s) copied to clipboard!`)
+      setCopyModalOpen(false)
+    } catch (err) {
+      toast.error("Failed to copy to clipboard")
     }
   }
 
@@ -408,7 +458,7 @@ export function ExamGroupDetailView({ id }: ExamGroupDetailViewProps) {
       {activeTab === "results" && (
         <div className="space-y-4">
           {/* Results Toolbar */}
-          <div className="flex items-center gap-4 rounded-xl border border-outline-variant/30 bg-surface-container-low p-4">
+          <div className="flex items-center justify-between gap-4 rounded-xl border border-outline-variant/30 bg-surface-container-low p-4">
             <div className="relative flex-1 max-w-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-outline" />
               <Input
@@ -419,6 +469,44 @@ export function ExamGroupDetailView({ id }: ExamGroupDetailViewProps) {
                 className="w-full bg-white pl-9 text-xs h-9"
               />
             </div>
+
+            <Dialog open={copyModalOpen} onOpenChange={setCopyModalOpen}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCopyModalOpen(true)}
+                disabled={!resultsData?.items || resultsData.items.length === 0}
+                className="flex items-center gap-2 cursor-pointer bg-white"
+              >
+                <Copy className="h-4 w-4" />
+                <span>Copy Top Results</span>
+              </Button>
+
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Copy Top Results</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium leading-none">Number of students</label>
+                    <Input 
+                      type="number" 
+                      min={1}
+                      max={resultsData?.items?.length || 1}
+                      value={copyCount} 
+                      onChange={(e) => setCopyCount(Number(e.target.value))}
+                    />
+                    <p className="text-xs text-outline mt-1">
+                      Enter how many top students you want to copy (1-{resultsData?.items?.length || 1})
+                    </p>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setCopyModalOpen(false)}>Cancel</Button>
+                  <Button onClick={handleCopyTopResults}>Copy JSON</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
 
           {/* Results Table */}
@@ -471,8 +559,10 @@ export function ExamGroupDetailView({ id }: ExamGroupDetailViewProps) {
                         <div className="flex items-center gap-2">
                           <User className="h-4 w-4 text-outline" />
                           <div>
-                            <p className="font-bold text-on-surface">{res.student?.user?.name || "Student"}</p>
-                            <p className="text-xs text-outline">{res.student?.user?.email || res.studentId}</p>
+                            <p className="font-bold text-on-surface">{res.student?.name || "Student"}</p>
+                            <p className="text-xs text-outline">
+                              Roll: {res.student?.roll || "-"} | ID: {res.studentId.slice(0, 8)}
+                            </p>
                           </div>
                         </div>
                       </td>
